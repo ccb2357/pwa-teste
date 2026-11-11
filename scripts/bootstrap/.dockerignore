@@ -1,0 +1,5 @@
+*
+!executor/
+!executor/package.json
+!executor/package-lock.json
+!executor/entrypoint.mjs

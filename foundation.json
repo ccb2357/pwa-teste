@@ -1,0 +1,17 @@
+{
+  "foundationVersion": "0.1.0-sprint.1",
+  "stage": "backend",
+  "completeFoundation": false,
+  "skeleton": {
+    "package": "laravel/laravel",
+    "version": "v12.12.2",
+    "reference": "945f4e5a9fd3695dc0ee512f497c650fb82cfbb8"
+  },
+  "framework": "12.70.0",
+  "executor": {
+    "dockerCli": "28.5.1",
+    "compose": "2.40.3",
+    "node": "22-alpine",
+    "dotenv": "16.6.1"
+  }
+}
