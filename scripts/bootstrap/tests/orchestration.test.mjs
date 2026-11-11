@@ -15,7 +15,7 @@ async function fixture({ pending = false, production = false } = {}) {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-flow-'));
   const projects = tmp + '/projects', root = projects + '/product-a';
   await fs.mkdir(root + '/backend', { recursive: true }); await fs.mkdir(root + '/frontend'); await fs.mkdir(projects + '/infra'); await fs.mkdir(tmp + '/bin');
-  await fs.copyFile(new URL('../../../instalacao.md', import.meta.url), root + '/instalacao.md');
+  await fs.copyFile(new URL('../../../instalacao-pwa-framework.md', import.meta.url), root + '/instalacao-pwa-framework.md');
   await fs.writeFile(projects + '/infra/docker-compose.yml', '# fixture'); await fs.writeFile(root + '/backend/composer.lock', '{}');
   const values = { ...example, PROJECT_SLUG: 'product-a', LOCAL_DOMAIN: 'product-a.localhost', DB_DATABASE: 'product_a', DB_TEST_DATABASE: 'product_a_test', CONTAINER_PROJECTS_ROOT: projects, APP_ENV: production ? 'production' : 'local', PRODUCTION_URL: production ? 'https://example.com' : '', DB_PASSWORD: 'fixture$special #password' };
   await fs.writeFile(root + '/.env.foundation', Object.entries(values).map(([k, v]) => `${k}='${v}'`).join('\n'));
@@ -65,10 +65,10 @@ test('preparation exits 2 before dependencies/env writes when effective infra is
   try {
     const result = await f.invoke(); assert.equal(result.code, 2); assert.equal((await f.data()).installs, 0);
     await assert.rejects(fs.access(f.root + '/backend/.env'));
-    const guide = await fs.readFile(f.root + '/instalacao.md', 'utf8');
+    const guide = await fs.readFile(f.root + '/instalacao-pwa-framework.md', 'utf8');
     assert.match(guide, /product-a-node/); assert.match(guide, /product_a_vendor/);
     assert.match(guide, /server_name product-a.localhost/);
-    assert.match(result.stderr, /instalacao.md/);
+    assert.match(result.stderr, /instalacao-pwa-framework.md/);
     await assert.rejects(fs.access(f.root + '/infra-generated'));
     assert.doesNotMatch(result.stdout + result.stderr, /fixture\$special/);
   } finally { await f.cleanup(); }
@@ -78,7 +78,7 @@ test('initialized flow preserves keys and skips unchanged dependencies on reexec
   try {
     const first = await f.invoke(); assert.equal(first.code, 0, first.stdout + first.stderr);
     const env = await fs.readFile(f.root + '/backend/.env', 'utf8');
-    const guidePath = f.root + '/instalacao.md';
+    const guidePath = f.root + '/instalacao-pwa-framework.md';
     await fs.appendFile(guidePath, '\nObservação local preservada.\n');
     const guide = await fs.readFile(guidePath, 'utf8');
     const second = await f.invoke(); assert.equal(second.code, 0, second.stderr); assert.equal(await fs.readFile(f.root + '/backend/.env', 'utf8'), env);

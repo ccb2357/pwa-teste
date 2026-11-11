@@ -1,6 +1,6 @@
 # Ambiente e inicialização
 
-O roteiro único de instalação, trechos Compose/Nginx, comandos de teste, operação diária e VPS está em [instalacao.md](../../instalacao.md), na raiz. Este documento mantém o contrato técnico do ambiente.
+O roteiro único de instalação, trechos Compose/Nginx, comandos de teste, operação diária e VPS está em [instalacao-pwa-framework.md](../../instalacao-pwa-framework.md), na raiz. Este documento mantém o contrato técnico do ambiente.
 
 ## Mapeamento observado em 2026-11-11
 
@@ -86,7 +86,7 @@ Nesta infraestrutura: C:\var\www ↔ /var/www; Compose host C:\var\www\infra\doc
 
 Dentro do executor, Compose é usado **somente para leitura/validação** com --project-name, --project-directory, arquivos efetivos e perfil dev, além de config --no-path-resolution. Não executar compose up/run para criar a pilha de dentro do executor. Operações PHP usam docker exec com IDs descobertos; a verificação de portas usa um contêiner Node temporário com bindings solicitados diretamente ao Engine. Assim não há remapeamento incorreto de binds em mutações Compose. O atalho Windows roda Compose no host, preservando projeto, diretório e arquivos descobertos.
 
-Os blocos gerenciados em instalacao.md contêm bind source host mapeado explicitamente. Não copiar esses caminhos Windows para a VPS: executar a preparação naquele ambiente para gerar os valores reais.
+Os blocos gerenciados em instalacao-pwa-framework.md contêm bind source host mapeado explicitamente. Não copiar esses caminhos Windows para a VPS: executar a preparação naquele ambiente para gerar os valores reais.
 
 Conflitos de portas declaradas em outros serviços/contêineres interrompem. Portas livres são reservadas temporariamente pelo Engine usando publicação real 127.0.0.1, sem confundir bind dentro do executor com disponibilidade no host. A reserva termina antes da aplicação manual; outro processo ainda pode ocupar a porta depois. Em falha, conferir escutas/reservas no Windows ou VPS, sem mudar portas silenciosamente.
 
@@ -98,7 +98,7 @@ Conflitos de portas declaradas em outros serviços/contêineres interrompem. Por
 | 1 | Erro de configuração/runtime/processo ou produção sem --force |
 | 2 | Infraestrutura a aplicar manualmente, ou bancos inacessíveis que exigem criação manual |
 
-Preparação: validar central, identidade, configuração Compose, serviços, rede, mounts e portas; atualizar os blocos Compose/Nginx de instalacao.md sem credenciais e atualizar somente blocos documentais gerenciados. Configuração Nginx em disco é conferida e o HTTP final comprova que o site está efetivamente respondendo. Se faltarem recursos, parar antes de dependências/backend .env.
+Preparação: validar central, identidade, configuração Compose, serviços, rede, mounts e portas; atualizar os blocos Compose/Nginx de instalacao-pwa-framework.md sem credenciais e atualizar somente blocos documentais gerenciados. Configuração Nginx em disco é conferida e o HTTP final comprova que o site está efetivamente respondendo. Se faltarem recursos, parar antes de dependências/backend .env.
 
 Inicialização: PHP 8.2/extensões/Composer 2; sincronizar chaves gerenciadas nos .env; ajustar apenas storage, bootstrap/cache e permissões dos .env do projeto; instalar pelo composer.lock somente se necessário; validar plataforma; conectar e criar somente bancos ausentes com a conta existente; limpar configuração em processo separado, conferir a configuração Laravel efetiva e executar app:sync. Em local, gerar .env.testing separado; em produção, não gerar esse ambiente de testes.
 

@@ -22,10 +22,10 @@ export function viteCmd(c, d) {
   return `@echo off\r\nsetlocal DisableDelayedExpansion\r\nif /I "%~1"=="dev" goto dev\r\nif /I "%~1"=="build" goto build\r\necho Use: vite dev ou vite build\r\nexit /b 1\r\n:dev\r\ndocker compose ${flags} run --rm --no-deps --service-ports ${c.nodeService} npm run dev\r\nexit /b %errorlevel%\r\n:build\r\ndocker compose ${flags} run --rm --no-deps ${c.nodeService} npm run build\r\nexit /b %errorlevel%\r\n`;
 }
 export async function generate(c, d) {
-  const guidePath = path.join(c.root, 'instalacao.md');
+  const guidePath = path.join(c.root, 'instalacao-pwa-framework.md');
   const guide = await readOptional(guidePath);
   const infraBlock = /<!-- BEGIN FOUNDATION INSTALL INFRA -->[\s\S]*?<!-- END FOUNDATION INSTALL INFRA -->/;
-  requireThat(infraBlock.test(guide), 'instalacao.md ausente ou sem bloco gerenciado. Restaure o guia da entrega antes de executar o bootstrap.');
+  requireThat(infraBlock.test(guide), 'instalacao-pwa-framework.md ausente ou sem bloco gerenciado. Restaure o guia da entrega antes de executar o bootstrap.');
   await writeAtomic(guidePath, guide.replace(infraBlock, () => installationInfra(c, d)));
   const file = path.join(c.frontend, 'vite.cmd');
   await writeAtomic(file, viteCmd(c, d));

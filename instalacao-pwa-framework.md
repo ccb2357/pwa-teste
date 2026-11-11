@@ -54,7 +54,7 @@ docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
 echo %ERRORLEVEL%
 ```
 
-Na primeira execução sem recursos pwa-teste, o código esperado é **2**: os blocos gerenciados deste instalacao.md foram atualizados com os valores do ambiente e a instalação PHP ainda não iniciou. Corrigir erro de build/CLI/socket antes de prosseguir; não declarar sucesso pelo fato de a imagem existir.
+Na primeira execução sem recursos pwa-teste, o código esperado é **2**: os blocos gerenciados deste instalacao-pwa-framework.md foram atualizados com os valores do ambiente e a instalação PHP ainda não iniciou. Corrigir erro de build/CLI/socket antes de prosseguir; não declarar sucesso pelo fato de a imagem existir.
 
 <!-- BEGIN FOUNDATION INSTALL INFRA -->
 

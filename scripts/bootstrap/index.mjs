@@ -30,7 +30,7 @@ try {
   if (problems.length) {
     state.phase = 'infra-pending'; state.pending = problems; await save();
     console.log(problems.map(x => '- ' + x).join('\n'));
-    throw new FoundationError('Instruções e trechos em instalacao.md, na raiz do projeto. Aplique manualmente, valide/recrie somente os serviços necessários e repita o comando.', 2);
+    throw new FoundationError('Instruções e trechos em instalacao-pwa-framework.md, na raiz do projeto. Aplique manualmente, valide/recrie somente os serviços necessários e repita o comando.', 2);
   }
   if (c.APP_ENV === 'production') requireThat(options.force, 'Produção: migrations exigem --force explícito. Nenhuma instalação/configuração backend foi alterada.');
   state.phase = 'backend-install'; state.pending = []; await save();

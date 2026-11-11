@@ -1,8 +1,8 @@
 # PWA Framework — fundação técnica reutilizável
 
-Instalação desta entrega: [instalacao.md](instalacao.md). Estado real, evidências e próximo passo: [MEMORY.md](MEMORY.md).
+Instalação desta entrega: [instalacao-pwa-framework.md](instalacao-pwa-framework.md). Estado real, evidências e próximo passo: [MEMORY.md](MEMORY.md).
 
-**Instalação centralizada:** todos os passos e blocos Compose/Nginx ficam em [instalacao.md](instalacao.md). O bootstrap atualiza somente os blocos gerenciados desse guia, sem alterar a infraestrutura compartilhada.
+**Instalação centralizada:** todos os passos e blocos Compose/Nginx ficam em [instalacao-pwa-framework.md](instalacao-pwa-framework.md). O bootstrap atualiza somente os blocos gerenciados desse guia, sem alterar a infraestrutura compartilhada.
 
 Fundação reutilizável para PWAs com stack, padrões visuais, infraestrutura e documentação comuns. Primeiro construir e validar a base; depois criar produtos com nomes e funcionalidades próprios.
 
@@ -110,7 +110,7 @@ Exemplo de interface a entregar, executada na pasta infra pelo Prompt de Comando
 docker compose run --rm pwa-foundation-bootstrap --project /var/www/meu-projeto
 ```
 
-O entrypoint do serviço deve localizar e executar /var/www/meu-projeto/scripts/bootstrap/index.mjs. O argumento --project localiza o arquivo central; a identidade continua vindo dele. Adaptar a raiz ao mount real e documentar os comandos concretos em instalacao.md. O exemplo é contrato de implementação, não comando já disponível nos arquivos recebidos.
+O entrypoint do serviço deve localizar e executar /var/www/meu-projeto/scripts/bootstrap/index.mjs. O argumento --project localiza o arquivo central; a identidade continua vindo dele. Adaptar a raiz ao mount real e documentar os comandos concretos em instalacao-pwa-framework.md. O exemplo é contrato de implementação, não comando já disponível nos arquivos recebidos.
 
 ### Localhost, primeira instalação na VPS e atualizações
 
@@ -169,7 +169,7 @@ Não tratar --force como autorização geral para operações destrutivas ou alt
 - Entregar scripts/bootstrap/index.mjs, módulos, templates e os arquivos do executor Docker versionados em scripts/bootstrap/. Executar pelo serviço compartilhado pwa-foundation-bootstrap conforme o contrato acima, sem depender do serviço Node do aplicativo nem de runtimes instalados no host. Não criar outro Compose. Eventuais atalhos .cmd/.sh não devem conter lógica própria ou ser necessários ao fluxo portátil.
 - Validar arquivo central, sintaxe, valores obrigatórios, portas, identificadores, cores, caminhos e Docker/Compose. Ler dotenv como dados, sem executar o conteúdo como script; tratar espaços, aspas e caracteres especiais de senhas corretamente, sem imprimi-las ou passá-las em argumentos visíveis.
 - Detectar conflitos de nomes/portas com outros projetos, distinguindo recursos já pertencentes ao clone. Comparar a configuração desejada com o estado efetivo, sem confiar somente em marcadores de execuções anteriores.
-- Preparar nos blocos gerenciados de instalacao.md os trechos mínimos de Compose e Nginx, destinos e instruções de aplicação, sem credenciais. Reutilizar serviços/rede existentes e declarar somente serviço Node, mounts, volumes e site que faltarem. O responsável modifica a infraestrutura compartilhada, valida a sintaxe, recria os serviços necessários e recarrega o Nginx.
+- Preparar nos blocos gerenciados de instalacao-pwa-framework.md os trechos mínimos de Compose e Nginx, destinos e instruções de aplicação, sem credenciais. Reutilizar serviços/rede existentes e declarar somente serviço Node, mounts, volumes e site que faltarem. O responsável modifica a infraestrutura compartilhada, valida a sintaxe, recria os serviços necessários e recarrega o Nginx.
 - Se faltarem alterações ou serviços, terminar com estado explícito de pendência e código distinto de sucesso/falha, documentado em 04-ambiente.md. Não prosseguir à instalação nem declarar pronto. Se a infraestrutura já estiver correta, avançar na mesma execução.
 
 **Inicialização, após a infraestrutura estar disponível:**
@@ -185,7 +185,7 @@ Não tratar --force como autorização geral para operações destrutivas ou alt
 
 **Reexecução e isolamento:** preservar dados, credenciais, chave, volumes e personalizações; não duplicar recursos, repetir instalações sem necessidade ou anunciar sucesso após falha. Guardar estado técnico local sem segredos em .foundation-state.json, ignorado no Git, interromper no primeiro erro com código não zero e retomar conferindo o estado real. Mudança de slug, pasta, bancos ou volumes após inicialização exige plano explícito de migração; não migrar ou renomear dados automaticamente. Logs, metadados e documentação não podem conter senhas; falhas de configuração não devem imprimir o conteúdo bruto do arquivo.
 
-Incluir no pacote modelo somente código, templates, lockfiles, documentação e recursos públicos da fundação. Não clonar .env preenchidos, APP_KEY, dados de banco, sessões, caches, dependências instaladas ou estado de bootstrap de outro projeto. O inicializador atualiza a identificação documental por blocos delimitados sem reescrever especificações ou histórico; os comandos concretos ficam em instalacao.md, e andamento/decisões em MEMORY.md.
+Incluir no pacote modelo somente código, templates, lockfiles, documentação e recursos públicos da fundação. Não clonar .env preenchidos, APP_KEY, dados de banco, sessões, caches, dependências instaladas ou estado de bootstrap de outro projeto. O inicializador atualiza a identificação documental por blocos delimitados sem reescrever especificações ou histórico; os comandos concretos ficam em instalacao-pwa-framework.md, e andamento/decisões em MEMORY.md.
 
 ### Construção inicial e mudanças de infraestrutura
 
@@ -210,10 +210,10 @@ A documentação inicial pode avançar enquanto esses arquivos são reunidos, re
 1. Mapear os arquivos em conjunto: origem e destino dos mounts, rede, nomes de serviços/contêineres, portas, volumes declarados e utilizados, includes do Nginx, configuração PHP e dependências já incorporadas à imagem.
 2. Verificar o que já existe para o novo projeto. Não duplicar serviço Node, site, volume ou Composer. Se Composer já estiver na imagem, conferir e usar esse executável; o contêiner temporário é alternativa quando necessário.
 3. Preparar somente as alterações necessárias e apresentar os trechos exatos e sua localização. **Neste fluxo, o responsável aplica manualmente as mudanças na infraestrutura compartilhada, salvo instrução explícita em contrário.** Não apresentar uma alteração preparada como já aplicada.
-4. Solicitar em um único bloco as verificações aplicáveis: validação Compose com perfil dev (`config --quiet`), estado dos serviços (`ps -a`), PHP (`php -v` e `php -m`), Composer (`composer --version`), sintaxe Nginx (`nginx -t`) e disponibilidade da porta selecionada no sistema do responsável. Adaptar os comandos aos nomes, caminhos e shell reais; registrar os comandos concretos em `instalacao.md`.
+4. Solicitar em um único bloco as verificações aplicáveis: validação Compose com perfil dev (`config --quiet`), estado dos serviços (`ps -a`), PHP (`php -v` e `php -m`), Composer (`composer --version`), sintaxe Nginx (`nginx -t`) e disponibilidade da porta selecionada no sistema do responsável. Adaptar os comandos aos nomes, caminhos e shell reais; registrar os comandos concretos em `instalacao-pwa-framework.md`.
 5. Se os contêineres não existirem ou estiverem parados, orientar a criação/inicialização somente dos serviços necessários e depois repetir as verificações que falharam. Não iniciar todos os serviços do perfil dev indiscriminadamente; pode haver portas compartilhadas entre outros projetos. Não apagar volumes para resolver inicialização.
 6. Separar configuração declarada, alteração aplicada pelo responsável, validação relatada e teste executado pelo agente. `config --quiet` não comprova contêiner recriado, mount efetivo ou banco conectado; conferir o mount vendor antes da instalação e os demais recursos antes de seu primeiro uso.
-7. Registrar em MEMORY.md as evidências, versões efetivas, pendências e o próximo passo. Incorporar o mapeamento a `04-ambiente.md` e à arquitetura quando afetada. Registrar o contrato técnico e as evidências com seu contexto, sem guardar cópias dos arquivos da infraestrutura compartilhada. Outra IA deve solicitar os arquivos atuais antes de analisar ou alterar a infraestrutura; os trechos próprios de integração da aplicação ficam em instalacao.md.
+7. Registrar em MEMORY.md as evidências, versões efetivas, pendências e o próximo passo. Incorporar o mapeamento a `04-ambiente.md` e à arquitetura quando afetada. Registrar o contrato técnico e as evidências com seu contexto, sem guardar cópias dos arquivos da infraestrutura compartilhada. Outra IA deve solicitar os arquivos atuais antes de analisar ou alterar a infraestrutura; os trechos próprios de integração da aplicação ficam em instalacao-pwa-framework.md.
 
 **Outra IA deve solicitar ao responsável os arquivos atuais necessários à análise de infraestrutura.** Não substituir essa solicitação por cópias arquivadas ou pelo histórico. Na mesma sessão, reutilizar os arquivos atuais já enviados enquanto não houver indicação de mudança. Esses passos devem constar de AGENTS.md e RULES.md dos projetos derivados.
 
@@ -261,7 +261,7 @@ nome-do-projeto/
 ├── .env.foundation       # Local, ignorado no Git
 ├── scripts/
 │   └── bootstrap/        # index.mjs, módulos, templates e executor Docker
-├── instalacao.md        # Roteiro único e trechos gerenciados sem segredos
+├── instalacao-pwa-framework.md        # Roteiro único e trechos gerenciados sem segredos
 ├── frontend/
 │   ├── vite.cmd
 │   ├── src/
@@ -286,7 +286,7 @@ nome-do-projeto/
 | .env.foundation.example | Modelo versionado sem credenciais, com padrões e campos explicados |
 | scripts/bootstrap/index.mjs | Entrada Node portátil: preparação, espera por infraestrutura manual e inicialização; executada pelo serviço pwa-foundation-bootstrap |
 | scripts/bootstrap/ | Módulos, templates, Dockerfile e entrypoint do executor; trecho para inclusão manual no Compose compartilhado |
-| instalacao.md | Roteiro único de instalação e operação; blocos Compose/Nginx gerenciados pelo bootstrap, sem alterar a infraestrutura automaticamente |
+| instalacao-pwa-framework.md | Roteiro único de instalação e operação; blocos Compose/Nginx gerenciados pelo bootstrap, sem alterar a infraestrutura automaticamente |
 | frontend/ | Projeto independente com Vite, Vue 3, Framework7 Vue e recursos da PWA |
 | frontend/vite.cmd | Atalho Windows obrigatório, criado na fundação para executar desenvolvimento e build pelo Docker Compose |
 | frontend/src/ | Inicialização, navegação, telas, componentes compartilhados, estilos e cliente da API |
@@ -665,7 +665,7 @@ A documentação cresce junto com o projeto e deve permitir a continuidade por o
 3. **Atualizar após cada etapa relevante:** ajustar os documentos afetados e registrar progresso em MEMORY.md após decisões, mudanças de contrato/arquitetura/configuração/componente/fluxo, validações, bloqueios, conclusão, interrupção ou troca de tarefa. Não esperar o fim da sprint ou conversa.
 4. **Encerrar:** revisar o diff e a coerência entre código, contratos, configurações, referências e documentos. Alterar AGENTS.md e RULES.md somente quando suas orientações mudarem. Se não puder atualizar a documentação, registrar e informar a pendência na entrega.
 5. **Manter a retomada:** iniciar MEMORY.md com objetivo, estado real, última etapa concluída, decisões recentes, verificações/resultados, pendências, bloqueios e próximo passo concreto. Separar histórico do resumo vigente, consolidar repetições e identificar propostas e suposições.
-6. **Preservar o pacote:** manter código, manifests, lockfiles, configurações sem segredos e referências aprovadas junto da documentação. Não incluir cópias do Compose, Dockerfile, Nginx ou php.ini da infraestrutura compartilhada. Manter somente o contrato técnico no SDD e os blocos próprios de integração da aplicação em instalacao.md; solicitar os arquivos atuais ao responsável quando uma análise de infraestrutura for necessária. Antes de transferir ZIP/repositório, conferir sua completude e registrar o próximo passo; credenciais são configuradas separadamente. Não criar documento de passagem adicional.
+6. **Preservar o pacote:** manter código, manifests, lockfiles, configurações sem segredos e referências aprovadas junto da documentação. Não incluir cópias do Compose, Dockerfile, Nginx ou php.ini da infraestrutura compartilhada. Manter somente o contrato técnico no SDD e os blocos próprios de integração da aplicação em instalacao-pwa-framework.md; solicitar os arquivos atuais ao responsável quando uma análise de infraestrutura for necessária. Antes de transferir ZIP/repositório, conferir sua completude e registrar o próximo passo; credenciais são configuradas separadamente. Não criar documento de passagem adicional.
 
 Respeitar as responsabilidades da seção 10: SDD descreve a especificação; MEMORY.md registra andamento; RULES.md contém regras; AGENTS.md orienta o trabalho. Cada informação tem um único local responsável.
 
@@ -892,7 +892,7 @@ Se houver helper de precache, fornecer appEntry e comparar o facadeModuleId norm
 
 **Ordem obrigatória: aplicar arquivos → dependências quando necessário → build com sucesso → conferir dist → uma prévia → acesso no Windows → ADB → acesso no Android.** Usar Node pelo Docker, conforme a seção 4.
 
-Os exemplos usam pwa-teste-node, mount /app, infra em C:\var\www\infra e adb.exe em C:\tools\platform-tools. Adaptar uma vez aos nomes, caminhos e portas disponíveis da seção 0; documentar os comandos concretos em instalacao.md.
+Os exemplos usam pwa-teste-node, mount /app, infra em C:\var\www\infra e adb.exe em C:\tools\platform-tools. Adaptar uma vez aos nomes, caminhos e portas disponíveis da seção 0; documentar os comandos concretos em instalacao-pwa-framework.md.
 
 1. Aplicar a entrega na raiz correta, preservando .env e volumes. Fornecer arquivos prontos com destinos claros, sem exigir montagem manual de patches. Se dist não acompanhar o ZIP, informar a necessidade do build. Em erro persistente, conferir os bytes lidos pelo contêiner antes de reinstalar ou alterar infraestrutura.
 2. Na pasta infra, instalar dependências na primeira execução ou quando o lockfile mudar; correções sem mudança de dependências não exigem npm ci:
