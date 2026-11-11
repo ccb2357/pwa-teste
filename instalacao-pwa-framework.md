@@ -148,7 +148,13 @@ docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
 echo %ERRORLEVEL%
 ```
 
-Agora ele confere vendor efetivo, plataforma, configuração, bancos, migrations e HTTP/CSRF. Ao término bem-sucedido da etapa backend, abrir http://pwa-teste.localhost/status. JSON em http://pwa-teste.localhost/api/v1/status; saúde padrão em http://pwa-teste.localhost/up. Código 0 nesta release significa backend da Sprint 1 inicializado; não atesta frontend, PWA ou conclusão integral da fundação.
+O bootstrap verifica as dependências, a configuração, os bancos, as migrations e a comunicação com o backend. Se terminar com código **0**, o backend da Sprint 1 está pronto. Confira:
+
+- [Status do backend e banco](http://pwa-teste.localhost/status)
+- [Mesmo diagnóstico em JSON](http://pwa-teste.localhost/api/v1/status)
+- [Verificação básica do Laravel](http://pwa-teste.localhost/up)
+
+Esse resultado ainda não confirma o funcionamento do frontend e da PWA nem a conclusão da fundação.
 
 
 ## Verificações e testes

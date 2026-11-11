@@ -97,3 +97,6 @@ Revisão geral de terminais: instruções operacionais restantes do README ajust
 
 
 Guia de instalação renomeado para instalacao-pwa-framework.md por solicitação do responsável; links, geração do bootstrap e testes usam o novo nome. Na atualização de cópias anteriores, remover o guia com o nome anterior após aplicar o novo pacote.
+
+
+Clareza do guia: reescrito o resultado da retomada do bootstrap, com significado do código 0 e links identificados para os três diagnósticos. Escopo do aceite permanece limitado ao backend da Sprint 1.
