@@ -116,3 +116,7 @@ A conferência efetiva bloqueia valores herdados ou conexão URL/socket/read-wri
 - Compose config: https://docs.docker.com/reference/cli/docker/compose/config/
 - Projeto Compose: https://docs.docker.com/compose/how-tos/project-name/
 - Node child_process: https://nodejs.org/docs/latest-v22.x/api/child_process.html
+
+## Contrato dos testes
+
+A suíte completa PHP inclui o grupo mysql, com consulta real, diagnóstico saudável, app:sync duas vezes no banco testing e falha de conexão restrita ao processo. TestingDatabaseGuard exige APP_ENV=testing, central local e MySQL com servidor/porta e DB_TEST_DATABASE esperados, distinto do principal, sem URL/socket/read-write alternativos; valida antes de traits como RefreshDatabase. O grupo mysql pode ser excluído com --exclude-group=mysql para contratos determinísticos, mantendo o guard de isolamento. Não executar testes destrutivos em produção. Testes Node de Engine/Compose são simulações e não comprovam integração real com Docker ou VPS. Resultados e limites das verificações são registrados em MEMORY.md. Comandos operacionais ficam no guia da raiz.

@@ -165,49 +165,47 @@ Esse resultado ainda não confirma o funcionamento do frontend e da PWA nem a co
 
 ## Verificações e testes
 
-Os resultados reais, inclusive o que foi apenas simulado, ficam em [MEMORY.md](MEMORY.md). Ao assumir ou retomar uma análise da infraestrutura, solicitar ao responsável os arquivos atuais necessários; não presumir que o histórico ainda represente a configuração real. Arquivos atuais já enviados na mesma sessão podem ser reutilizados enquanto não houver indicação de mudança. Após instalação do backend local, na pasta infra:
+No CMD, execute um comando por vez. Os testes usam o banco exclusivo de testes.
 
 ```cmd
 cd /d C:\var\www\infra
+```
+
+Testes do backend:
+
+```cmd
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan test --env=testing
+```
+
+Formatação PHP:
+
+```cmd
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php vendor/bin/pint --test
+```
+
+Testes do bootstrap:
+
+```cmd
 docker compose run --rm --entrypoint node pwa-foundation-bootstrap --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
 ```
 
-A suíte completa inclui grupo mysql: consulta real, status saudável, app:sync duas vezes no banco testing e falha só na conexão daquele processo. Não desligar o MySQL compartilhado. Para executar apenas contratos determinísticos sem a integração saudável MySQL, usar:
+Esperado: todos os testes passando e nenhuma falha de formatação.
 
-```cmd
-docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan test --env=testing --exclude-group=mysql
-```
+## app:sync
 
-Mesmo testes determinísticos exigem central local e ambiente testing efetivo para conferir o isolamento. TestingDatabaseGuard roda na criação da aplicação antes de traits como RefreshDatabase: APP_ENV=testing, central APP_ENV=local, conexão mysql, servidor/porta correspondentes, banco igual ao DB_TEST_DATABASE e distinto do principal; sem URL/socket/read-write alternativos. Nunca preparar/executar testes destrutivos em produção.
-
-Testes do bootstrap simulam Engine/Compose de forma explícita e não comprovam socket, criação de contêiner, publicação de porta ou mount real em Windows/Linux. Os testes unitários de paths preservam espaços e impedem escapes; validações reais de portabilidade e dois clones pertencem ao aceite final.
-
-## app:sync e operação diária
-
-Comando implementado: optimize:clear e, só após sucesso, migrate com migrations pendentes. Propaga falha/código e não anuncia sucesso parcial. Não instala dependências, builda, semeia, apaga dados ou gera chaves. Em produção, --force obrigatório antes de limpar caches e repassado somente às migrations.
+Limpa os caches e aplica migrations pendentes. No CMD:
 
 ```cmd
 cd /d C:\var\www\infra
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan app:sync
 ```
 
-frontend/vite.cmd já é entregue e gerado pelo bootstrap, mas dev/build exigem os manifests/scripts da Sprint 2. O atalho resolve os caminhos pela própria pasta, desativa delayed expansion, preserva identidade Compose, dev publica --service-ports e build não publica. Propaga código Docker e não instala npm automaticamente. Não executar dev/build nesta etapa backend.
+## VPS e atualizações
 
-## VPS, atualizações e recuperação
+Na pasta infra da VPS, com `.env.foundation` de produção, Compose, Nginx e HTTPS preparados:
 
-Primeira instalação VPS: clone/pull da release pronta, criar .env.foundation próprio com APP_ENV=production/PRODUCTION_URL HTTPS e conexão real. Integrar executor manualmente se ausente; mapear infraestrutura efetiva e aplicar os blocos deste guia regenerados na VPS. Não copiar credenciais/estado/dados locais.
-
-Na pasta infra da VPS, depois de definir caminhos reais e aplicar alterações:
-
-```text
+```bash
 docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste --force
 ```
 
-O caminho acima pressupõe a mesma raiz interna configurada; adaptar ao mount real, nunca inferir ambiente pelo sistema operacional. Site de produção gerado inclui HTTPS e caminhos de certificado que precisam corresponder ao Certbot real. Não presumir certificado provisionado. A verificação final em production usa a origem HTTPS pública com validação de certificado; redirecionamento HTTP interno não basta.
-
-Atualizações: backup validado, git pull da revisão desejada e mesmo bootstrap com --force para migrations em produção. Preservar arquivos privados, volumes, APP_KEY e dados; mudanças de infra param com código 2 até aplicação manual. Não recriar Laravel/Vite. Releases de negócio com frontend precisarão das integrações de build previstas nas sprints seguintes; esta release cobre backend.
-
-Antes de publicação externa, definir e testar backup/restauração isolada de banco e arquivos persistentes, retenção/acesso e plano de recuperação. Publicar assets antes do HTML, manter clientes PWA antigos compatíveis e distinguir rollback de código de restauração de dados. Comandos finais de certificado, backup/restore e deploy dependem da VPS efetiva e devem existir antes de publicar. Não presumir migration reversa segura.
-
+Para atualizar: faça backup, execute `git pull` na pasta do projeto e repita o comando acima na pasta infra. Ajuste `/var/www/pwa-teste` ao caminho interno real da VPS.

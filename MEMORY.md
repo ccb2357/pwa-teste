@@ -2,9 +2,9 @@
 
 ## Objetivo e estado vigente — 2026-11-11
 
-Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. Sprint 1: código entregue e verificações abaixo executadas em ambiente temporário do agente. **Instalação e aceite na infraestrutura Windows do responsável ainda pendentes.** Não declarar fundação completa ou avançar ao aceite da Sprint 2 sem integração real.
+Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. Sprint 1: código entregue e verificações abaixo executadas em ambiente temporário do agente. **Backend instalado e verificações HTTP/CSRF concluídas no Windows, conforme saída enviada pelo responsável. Suíte PHP com MySQL real e demais checks ainda pendentes.** Não declarar fundação completa ou avançar ao aceite da Sprint 2 sem integração real.
 
-Próximo passo concreto: preencher .env.foundation, aplicar todos os blocos Compose/Nginx do guia (executor, Node, mount vendor e volumes), validar Compose, construir executor se necessário, recriar só PHP-FPM, validar/recarregar Nginx e então executar bootstrap. A saída real recebida já confirma que a descoberta Docker Desktop passou; ainda faltam Node, volumes, mount vendor e site Nginx. Roteiro completo em instalacao-pwa-framework.md.
+Próximo passo concreto: executar os testes backend com --env=testing no MySQL do responsável, conferir Pint e testes do bootstrap pelos comandos do guia. O responsável confirmou bootstrap concluído e /status, /api/v1/status e /up funcionando. Registrar o resultado da suíte antes de fechar o aceite local da Sprint 1 e seguir para a Sprint 2.
 
 ## Entregue
 
@@ -113,3 +113,13 @@ Removido do início do guia o texto introdutório indicado pelo responsável; o 
 
 
 Removido do guia o parágrafo sobre preenchimento de DB_PASSWORD e conta root, conforme solicitado pelo responsável. Demais instruções preservadas.
+
+
+## Diagnóstico HTTP/CSRF — 2026-11-11
+
+O responsável relatou falha na validação HTTP após Composer e app:sync. Testes enviados: /up, /status e API retornam 200; CSRF retorna 204; acesso interno ao CSRF com Origin localhost:5176 retorna token presente, sem Domain e curl 0; HTML/JSON públicos têm no-store e JSON esperado. Causa da falha original ainda não identificada. Verificador passou a retornar somente códigos controlados, endpoint, HTTP, errno e índice de origem, sem corpos, cookies ou detalhes arbitrários. Orquestrador apresenta esse diagnóstico sem repassar stdout/stderr privados. 25 testes Node passaram; PHP syntax check e cinco cenários HTTP reais em servidor temporário local (sucesso, ausência no-store, contrato HTML, JSON inválido e token ausente) passaram. Falta a nova execução no Windows para identificar a condição original. Guia de instalação preservado.
+
+
+## Guia operacional direto — 2026-11-11
+
+Enxugadas as seções de testes, app:sync e VPS por solicitação do responsável: somente finalidade breve, comandos separados e resultado esperado. Detalhes de implementação continuam no SDD/código; não removidas validações do sistema. Atualizado o estado de retomada com o sucesso real do bootstrap e dos três diagnósticos enviados pelo responsável. Suíte MySQL ainda aguarda execução. Alteração documental, sem nova execução de testes.

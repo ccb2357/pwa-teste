@@ -8,9 +8,18 @@ import { mapPath, mappedPaths, infraProblems, sameHost } from '../lib/docker.mjs
 import { managedEnv, appKey, checkIdentity, identity, writeAtomic } from '../lib/files.mjs';
 import { composeSnippet, nginxSnippet, siteApplied, viteCmd } from '../lib/templates.mjs';
 import { run } from '../lib/process.mjs';
+import { httpFailure } from '../lib/errors.mjs';
 const raw = await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8');
 const input = parseCentral(raw);
 const config = changes => validate({ ...input, ...changes }, '/var/www/pwa-teste');
+test('HTTP failures show only controlled diagnostics and discard private output', () => {
+  const output = httpFailure(JSON.stringify({ status: 'error', reason: 'html-contract', path: '/status', http_status: 200, curl_errno: 0, origin_index: 0, body: 'PRIVATE-BODY', cookies: 'PRIVATE-COOKIE' }));
+  assert.match(output, /\/status/); assert.match(output, /HTML/); assert.match(output, /HTTP 200/);
+  assert.doesNotMatch(output, /PRIVATE/);
+  for (const value of ['PRIVATE-ERROR', JSON.stringify({ status: 'error', reason: 'PRIVATE-ERROR' }), JSON.stringify({ status: 'error', reason: 'no-store', path: 'PRIVATE-PATH', http_status: 'PRIVATE-STATUS' })]) {
+    assert.doesNotMatch(httpFailure(value), /PRIVATE/);
+  }
+});
 const d = {
   project: 'infra', directory: '/var/www/infra', hostDir: 'C:\\var\\www\\infra', internalFiles: ['/var/www/infra/docker-compose.yml'],
   mapping: { toHost: x => mapPath(x, '/var/www', 'C:\\var\\www') },

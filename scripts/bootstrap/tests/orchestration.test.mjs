@@ -11,7 +11,7 @@ const entry = fileURLToPath(new URL('../index.mjs', import.meta.url));
 const runtime = fileURLToPath(new URL('../executor/package.json', import.meta.url));
 const example = parseCentral(await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8'));
 // Deterministic Engine/Compose simulation; never connects to or mutates a real Docker Engine.
-async function fixture({ pending = false, production = false, desktop = false } = {}) {
+async function fixture({ pending = false, production = false, desktop = false, httpFailure = false } = {}) {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-flow-'));
   const projects = tmp + '/projects', root = projects + '/product-a';
   await fs.mkdir(root + '/backend', { recursive: true }); await fs.mkdir(root + '/frontend'); await fs.mkdir(projects + '/infra'); await fs.mkdir(tmp + '/bin');
@@ -27,7 +27,7 @@ async function fixture({ pending = false, production = false, desktop = false } 
   const php = { Id: 'php-id', Config: { Labels: labels('php-fpm') }, State: { Running: true }, Mounts: [...mounts, ...(!pending ? [{ Type: 'volume', Name: c.vendorVolume, Destination: c.backend + '/vendor' }] : [])], NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const nginx = { Id: 'nginx-id', Config: { Labels: labels('nginx') }, State: { Running: true }, Mounts: mounts, NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const config = { services: { 'php-fpm': { volumes: [{ type: 'volume', source: c.vendorVolume, target: c.backend + '/vendor' }] }, [c.nodeService]: { image: 'node:22-alpine', working_dir: '/app', profiles: ['dev'], networks: { infra_network: {} }, volumes: [{ type: 'bind', source: '/srv/apps/product-a/frontend', target: '/app' }, { type: 'volume', source: c.modulesVolume, target: '/app/node_modules' }], ports: [{ target: 5173, published: '5176', host_ip: '127.0.0.1' }] } }, volumes: { [c.vendorVolume]: { name: c.vendorVolume }, [c.modulesVolume]: { name: c.modulesVolume } } };
-  const data = { php, nginx, config, site: pending ? '' : nginxSnippet(c), marker: '', installs: 0, syncs: 0, calls: [] };
+  const data = { php, nginx, config, site: pending ? '' : nginxSnippet(c), marker: '', installs: 0, syncs: 0, calls: [], httpFailure };
   const dataFile = tmp + '/fake-engine.json'; await fs.writeFile(dataFile, JSON.stringify(data));
   const fake = `#!${process.execPath}
 import fs from 'node:fs';
@@ -47,7 +47,7 @@ else if(a[0]==='exec'){
  else if(a.includes('app:sync'))data.syncs++;
  else if(a.some(x=>x.endsWith('databases.php'))){stdin();out='{"status":"ok"}';}
  else if(a.some(x=>x.endsWith('verify-runtime.php')))stdin();
- else if(a.some(x=>x.endsWith('verify-http.php'))){stdin();out='{"status":"ok","checks":{"simulation":"ok"}}';}
+ else if(a.some(x=>x.endsWith('verify-http.php'))){stdin();out=data.httpFailure?JSON.stringify({status:'error',reason:'csrf-token-missing',path:'/sanctum/csrf-cookie',http_status:204,curl_errno:0,origin_index:3,body:'PRIVATE-BODY'}):'{"status":"ok","checks":{"simulation":"ok"}}';if(data.httpFailure){process.exitCode=1;process.stderr.write('PRIVATE-STDERR');}}
  else if(a.includes('-r')){
   const code=a[a.indexOf('-r')+1];
   if(code.includes('PHP_VERSION'))out='8.2.35';
@@ -114,5 +114,16 @@ test('production requires force before backend initialization and does not gener
     const blocked = await f.invoke(); assert.equal(blocked.code, 1, blocked.stdout + blocked.stderr); assert.equal((await f.data()).installs, 0); await assert.rejects(fs.access(f.root + '/backend/.env'));
     const allowed = await f.invoke(true); assert.equal(allowed.code, 0, allowed.stderr); await assert.rejects(fs.access(f.root + '/backend/.env.testing'));
     const data = await f.data(); assert.ok(data.calls.some(a => a.includes('app:sync') && a.includes('--force')));
+  } finally { await f.cleanup(); }
+});
+test('HTTP failure identifies the failed contract and leaves state failed without exposing raw output', async () => {
+  const f = await fixture({ httpFailure: true });
+  try {
+    const result = await f.invoke();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /\/sanctum\/csrf-cookie; cookie XSRF-TOKEN ausente; HTTP 204/);
+    assert.match(result.stderr, /origem nº 3/);
+    assert.doesNotMatch(result.stdout + result.stderr, /PRIVATE/);
+    assert.equal(JSON.parse(await fs.readFile(f.root + '/.foundation-state.json', 'utf8')).phase, 'failed');
   } finally { await f.cleanup(); }
 });

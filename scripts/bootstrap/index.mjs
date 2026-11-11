@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { args, load, schema } from './lib/config.mjs';
-import { FoundationError, requireThat } from './lib/errors.mjs';
+import { FoundationError, requireThat, httpFailure } from './lib/errors.mjs';
 import { docker, jsonOutput } from './lib/process.mjs';
 import { discover, infraProblems, phpExec, checkPorts } from './lib/docker.mjs';
 import { generate, siteApplied } from './lib/templates.mjs';
@@ -62,7 +62,11 @@ try {
   console.log('Sincronizando caches e migrations pendentes.');
   await phpExec(c, d, ['php', 'artisan', 'app:sync', '--no-interaction', ...(options.force ? ['--force'] : [])], undefined, 'app:sync');
   await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/permissions.php')], undefined, 'Permissões finais');
-  const verify = await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/verify-http.php')], JSON.stringify({ target: c.NGINX_INTERNAL_URL, url: c.appUrl, origins: c.stateful.split(','), environment: c.APP_ENV }), 'HTTP via Nginx, diagnóstico e CSRF');
+  const verify = await docker(['exec', '-i', '--workdir', c.backend, d.php.Id, 'php', path.join(c.root, 'scripts/bootstrap/php/verify-http.php')], {
+    input: JSON.stringify({ target: c.NGINX_INTERNAL_URL, url: c.appUrl, origins: c.stateful.split(','), environment: c.APP_ENV }),
+    label: 'HTTP via Nginx, diagnóstico e CSRF', allowFailure: true, timeout: 900000,
+  });
+  if (verify.code !== 0) throw new FoundationError(httpFailure(verify.stdout));
   const evidence = jsonOutput(verify, 'Verificação HTTP');
   requireThat(evidence.status === 'ok', 'Integração HTTP não foi validada.');
   state.phase = 'backend-ready'; state.lastExitCode = 0; state.phpVersion = version; state.composerLock = hash(lockfile); state.verifiedAt = new Date().toISOString(); state.checks = evidence.checks;

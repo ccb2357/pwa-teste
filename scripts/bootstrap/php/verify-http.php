@@ -2,11 +2,15 @@
 
 declare(strict_types=1);
 
+$diagnostic = ['path' => '', 'http_status' => 0, 'curl_errno' => 0, 'origin_index' => 0];
 try {
     $config = json_decode(stream_get_contents(STDIN), true, 32, JSON_THROW_ON_ERROR);
     $host = parse_url($config['url'], PHP_URL_HOST);
     $checks = [];
-    $request = function (string $path, ?string $origin = null, bool $public = false) use ($config, $host): array {
+    $request = function (string $path, ?string $origin = null, bool $public = false) use ($config, $host, &$diagnostic): array {
+        $diagnostic['path'] = $path;
+        $diagnostic['http_status'] = 0;
+        $diagnostic['curl_errno'] = 0;
         $handle = curl_init(($public ? $config['url'] : rtrim($config['target'], '/')).$path);
         $headers = ['Host: '.$host, 'Accept: '.($path === '/api/v1/status' ? 'application/json' : 'text/html')];
         if ($origin !== null) {
@@ -14,6 +18,8 @@ try {
         }
         curl_setopt_array($handle, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HEADER => true, CURLOPT_HTTPHEADER => $headers, CURLOPT_CONNECTTIMEOUT => 10, CURLOPT_TIMEOUT => 20, CURLOPT_FOLLOWLOCATION => false, CURLOPT_SSL_VERIFYPEER => true, CURLOPT_SSL_VERIFYHOST => 2]);
         $response = curl_exec($handle);
+        $diagnostic['curl_errno'] = curl_errno($handle);
+        $diagnostic['http_status'] = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
         if ($response === false) {
             throw new RuntimeException('http-connection');
         }
@@ -44,20 +50,30 @@ try {
         }
         $checks[$path] = 'ok';
     }
-    foreach ($config['origins'] as $origin) {
+    foreach ($config['origins'] as $index => $origin) {
+        $diagnostic['origin_index'] = $index + 1;
         $origin = ($public ? 'https://' : 'http://').$origin;
         [$code, $headers, $body] = $request('/api/v1/status', $origin, $public);
         if ($code !== 200 || (json_decode($body, true)['status'] ?? '') !== 'ok') {
             throw new RuntimeException('origin-status');
         }
         [$code, $headers] = $request('/sanctum/csrf-cookie', $origin, $public);
-        if ($code !== 204 || ! str_contains($headers, 'XSRF-TOKEN=') || preg_match('/Set-Cookie:[^\r\n]*;\s*domain=/i', $headers)) {
-            throw new RuntimeException('csrf-cookie');
+        if ($code !== 204) {
+            throw new RuntimeException('csrf-status');
+        }
+        if (! str_contains($headers, 'XSRF-TOKEN=')) {
+            throw new RuntimeException('csrf-token-missing');
+        }
+        if (preg_match('/Set-Cookie:[^\r\n]*;\s*domain=/i', $headers)) {
+            throw new RuntimeException('csrf-cookie-domain');
         }
     }
     $checks['origins-csrf-host-only'] = 'ok';
     echo json_encode(['status' => 'ok', 'checks' => $checks], JSON_THROW_ON_ERROR);
 } catch (Throwable $exception) {
-    fwrite(STDERR, "Verificação HTTP/CSRF falhou. Confira Nginx, banco, origens, cookies e HTTPS conforme o ambiente.\n");
+    $known = ['http-connection', 'http-status', 'no-store', 'status-contract', 'html-contract', 'origin-status', 'csrf-status', 'csrf-token-missing', 'csrf-cookie-domain'];
+    $reason = $exception instanceof JsonException ? 'invalid-json' : (in_array($exception->getMessage(), $known, true) ? $exception->getMessage() : 'unexpected-error');
+    // Only controlled codes and numeric context; never return response bodies, headers or exception details.
+    echo json_encode(['status' => 'error', 'reason' => $reason] + $diagnostic, JSON_THROW_ON_ERROR);
     exit(1);
 }
