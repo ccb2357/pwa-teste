@@ -107,3 +107,6 @@ Clareza do guia: reescrito o resultado da retomada do bootstrap, com significado
 Guia revisado após relato do responsável: a primeira execução do bootstrap estava antes das alterações obrigatórias, gerando uma lista de pendências que o roteiro deveria antecipar. Nova ordem: configurar central; incluir executor; aplicar Node/mount/volumes/Nginx; validar e aplicar infraestrutura; executar bootstrap; conferir diagnóstico. O gerador mantém a mesma numeração e ordem ao atualizar o guia. README alinhado. Código 2 é fluxo de correção de pendências, não etapa obrigatória inicial do roteiro local.
 
 Verificação desta revisão: 23 testes do bootstrap passaram; o teste de preparação também confere que os blocos de infraestrutura e sua aplicação antecedem a primeira execução no guia regenerado. Pendências reais recebidas do responsável não foram apresentadas como já aplicadas.
+
+
+Removido do início do guia o texto introdutório indicado pelo responsável; o conteúdo começa diretamente na etapa 1 após o título. Etapas e comandos preservados.

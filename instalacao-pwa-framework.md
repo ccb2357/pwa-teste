@@ -1,15 +1,5 @@
 # Instalação — PWA Framework
 
-Este é o roteiro único de instalação e operação desta entrega. Os comandos locais devem ser executados no **Prompt de Comando (CMD)**. Todos os trechos de Compose e Nginx estão neste arquivo; não é necessário abrir outros arquivos para copiá-los.
-
-Se estiver atualizando uma entrega anterior, remova os antigos `scripts/bootstrap/executor/compose-service.yml` e `infra-generated/` da cópia do projeto; eles foram substituídos por este guia. Preserve `.env.foundation`, os arquivos `.env`, os volumes e as configurações já aplicadas na pasta `infra`.
-
-Os blocos abaixo são trechos de integração próprios da aplicação. Não são cópias completas nem comprovação da configuração atual da infraestrutura compartilhada. Outra IA deve pedir os arquivos atuais ao responsável antes de analisar ou alterar essa infraestrutura.
-
-## Instalação local da Sprint 1
-
-Siga a ordem abaixo: configuração → Compose e Nginx → validação e aplicação → bootstrap → diagnóstico.
-
 ## 1. Preparar a pasta e a configuração
 
 Aplicar o conteúdo do pacote para que a raiz seja C:\var\www\pwa-teste, sem uma segunda pasta pwa-teste aninhada. Preservar arquivos privados e volumes existentes. O pacote é cumulativo e não contém vendor, node_modules, .env preenchidos ou APP_KEY.
