@@ -2,9 +2,9 @@
 
 ## Objetivo e estado vigente — 2026-11-11
 
-Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. Sprint 1: código entregue e verificações abaixo executadas em ambiente temporário do agente. **Backend instalado e verificações HTTP/CSRF concluídas no Windows, conforme saída enviada pelo responsável. Suíte PHP com MySQL real e demais checks ainda pendentes.** Não declarar fundação completa ou avançar ao aceite da Sprint 2 sem integração real.
+Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. **Sprint 1 concluída e validada no ambiente local Windows/Docker do responsável.** Evidências recebidas: bootstrap concluído, dependências preservadas na reexecução, app:sync e verificações HTTP/CSRF OK; /status, /api/v1/status e /up OK; 14 testes PHP com 57 assertions, incluindo MySQL real; Pint aprovado em 36 arquivos; nova execução dos 25 testes Node confirmada como bem-sucedida pelo responsável após correção do runtime da fixture.
 
-Próximo passo concreto: executar os testes backend com --env=testing no MySQL do responsável, conferir Pint e testes do bootstrap pelos comandos do guia. O responsável confirmou bootstrap concluído e /status, /api/v1/status e /up funcionando. Registrar o resultado da suíte antes de fechar o aceite local da Sprint 1 e seguir para a Sprint 2.
+Próximo passo concreto: iniciar a Sprint 2, frontend Framework7 Vue e página Hello conforme README e SDD. Não repetir os checks aprovados sem alteração relevante. Frontend/PWA, aparelhos e VPS continuam com os aceites próprios das próximas etapas; a fundação completa ainda está em construção.
 
 ## Entregue
 
@@ -36,13 +36,11 @@ Próximo passo concreto: executar os testes backend com --env=testing no MySQL d
 - Docker CLI/Compose da imagem de executor tiveram versões conferidas com os binários reais. Compose 2.40.3 validou o merge de referência sanitizada + fragmentos + executor com config --quiet; não houve criação de contêiner.
 - Formatação PHP/Pint, sintaxe PHP/JS, lockfiles e pacote/links/segredos verificados conforme registro final de empacotamento. Não foram inventadas evidências de instalação.
 
-## Pendências de aceite
+## Pendências das próximas etapas
 
-1. Build e execução real do executor via Docker Desktop/socket no Windows. Validar mounts pwa_teste reais, Composer dentro do volume e conexão aos bancos existentes/criados com a conta configurada.
-2. /status e /api/v1/status saudáveis pelo Nginx real, .env efetivo/CSRF e suíte completa com grupo mysql. Testes MySQL reais foram entregues, ainda não executados pelo agente. Executar app:sync duas vezes na integração e registrar ausência de migrations pendentes.
-3. Docker/Linux e VPS reais, TLS/certificado, backups/restore, dois clones simultâneos e falhas parciais reais. Código e testes determinísticos não substituem esses aceites.
-4. Sprint 2: Vue/Framework7/Hello, fonte Nunito local, versões auxiliares frontend exatas, configuração pública e integração npm no bootstrap. Sprint 4: build e verificações PWA. Não confundir backend-ready com conclusão integral.
-5. Definir ferramentas de formatação/lint JS/CSS antes de novas dependências; nesta etapa JS usa check sintático e testes nativos Node, PHP usa Pint. Não adicionar bibliotecas silenciosamente.
+1. Sprint 2: Vue/Framework7/Hello, fonte Nunito local, versões auxiliares frontend exatas, configuração pública e integração npm no bootstrap. Sprint 4: build e verificações PWA.
+2. Docker/Linux e VPS reais, TLS/certificado, backups/restore, dois clones simultâneos, aparelhos e falhas parciais reais. Simulações dos testes Node não substituem essas evidências.
+3. Definir ferramentas de formatação/lint JS/CSS antes de novas dependências; nesta etapa JS usa check sintático e testes nativos Node, PHP usa Pint. Não adicionar bibliotecas silenciosamente.
 
 ## Histórico resumido
 
@@ -123,3 +121,13 @@ O responsável relatou falha na validação HTTP após Composer e app:sync. Test
 ## Guia operacional direto — 2026-11-11
 
 Enxugadas as seções de testes, app:sync e VPS por solicitação do responsável: somente finalidade breve, comandos separados e resultado esperado. Detalhes de implementação continuam no SDD/código; não removidas validações do sistema. Atualizado o estado de retomada com o sucesso real do bootstrap e dos três diagnósticos enviados pelo responsável. Suíte MySQL ainda aguarda execução. Alteração documental, sem nova execução de testes.
+
+
+## Validação recebida e correção do runtime dos testes — 2026-11-11
+
+Anexo do responsável: 14 testes PHP passaram com 57 assertions, incluindo MySqlIntegrationTest; Pint aprovou 36 arquivos. Node: 20 testes passaram e os cinco de orquestração falharam com MODULE_NOT_FOUND dotenv. Causa confirmada: a fixture sobrescrevia FOUNDATION_RUNTIME_PACKAGE com o package.json do projeto, ignorando /opt/foundation/package.json definido na imagem. Corrigida para preservar a variável do executor e usar fallback local somente quando ausente. Reprodução isolada pelo agente com node_modules do projeto ausente e runtime externo: antes 20/25, depois 25/25. Não foi necessário instalar dependências no projeto nem alterar a imagem. Falta repetir a suíte Node no Docker do responsável para confirmar a correção nesse ambiente.
+
+
+## Aceite local da Sprint 1 — 2026-11-11
+
+Após receber a correção de orchestration.test.mjs, o responsável confirmou que a suíte Node passou. Somado aos resultados anexados de PHP/MySQL e Pint e à execução real do bootstrap/diagnósticos, fica encerrado o aceite local da Sprint 1. A confirmação final Node foi textual; não foi inventada nova execução pelo agente ou transcrição não fornecida. Próxima etapa: Sprint 2; não iniciada nesta entrega.

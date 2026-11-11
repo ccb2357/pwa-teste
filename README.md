@@ -6,7 +6,7 @@ Instalação desta entrega: [instalacao-pwa-framework.md](instalacao-pwa-framewo
 
 Fundação reutilizável para PWAs com stack, padrões visuais, infraestrutura e documentação comuns. Primeiro construir e validar a base; depois criar produtos com nomes e funcionalidades próprios.
 
-**Estado:** construção em andamento; código da Sprint 1 entregue, instalação/aceite no ambiente do responsável ainda precisam ser comprovados. Distinguir sempre código entregue, instalado e validado; declarar conclusão somente com evidências e registrar pendências em MEMORY.md.
+**Estado:** Sprint 1 concluída e validada no ambiente local Windows/Docker do responsável. Próxima etapa: Sprint 2 — frontend Framework7 Vue e página Hello. Fundação completa ainda em construção; evidências e demais aceites em MEMORY.md.
 
 ## 0. Construir uma vez, configurar e inicializar após cada clone
 

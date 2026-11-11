@@ -8,7 +8,7 @@ import { run } from '../lib/process.mjs';
 import { validate, parseCentral } from '../lib/config.mjs';
 import { nginxSnippet } from '../lib/templates.mjs';
 const entry = fileURLToPath(new URL('../index.mjs', import.meta.url));
-const runtime = fileURLToPath(new URL('../executor/package.json', import.meta.url));
+const runtime = process.env.FOUNDATION_RUNTIME_PACKAGE || fileURLToPath(new URL('../executor/package.json', import.meta.url));
 const example = parseCentral(await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8'));
 // Deterministic Engine/Compose simulation; never connects to or mutates a real Docker Engine.
 async function fixture({ pending = false, production = false, desktop = false, httpFailure = false } = {}) {

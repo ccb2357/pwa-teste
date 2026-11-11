@@ -120,3 +120,5 @@ A conferência efetiva bloqueia valores herdados ou conexão URL/socket/read-wri
 ## Contrato dos testes
 
 A suíte completa PHP inclui o grupo mysql, com consulta real, diagnóstico saudável, app:sync duas vezes no banco testing e falha de conexão restrita ao processo. TestingDatabaseGuard exige APP_ENV=testing, central local e MySQL com servidor/porta e DB_TEST_DATABASE esperados, distinto do principal, sem URL/socket/read-write alternativos; valida antes de traits como RefreshDatabase. O grupo mysql pode ser excluído com --exclude-group=mysql para contratos determinísticos, mantendo o guard de isolamento. Não executar testes destrutivos em produção. Testes Node de Engine/Compose são simulações e não comprovam integração real com Docker ou VPS. Resultados e limites das verificações são registrados em MEMORY.md. Comandos operacionais ficam no guia da raiz.
+
+Os subprocessos dos testes de orquestração preservam FOUNDATION_RUNTIME_PACKAGE do executor, que aponta para /opt/foundation/package.json; o fallback executor/package.json local só é usado quando a variável não existe. A suíte não exige node_modules no bind do projeto quando executada pela imagem.
