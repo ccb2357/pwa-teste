@@ -16,9 +16,9 @@ Fundação reutilizável para PWAs com stack, padrões visuais, infraestrutura e
 
 1. Clonar uma release pronta na pasta do novo projeto.
 2. Copiar .env.foundation.example para .env.foundation na raiz e preencher os dados locais.
-3. Executar o bootstrap Node pelo serviço temporário pwa-foundation-bootstrap do Compose compartilhado, indicando o projeto alvo conforme os comandos abaixo. Na primeira passagem, validar a configuração e preparar os trechos de infraestrutura. Esse serviço deve ter sido integrado manualmente uma vez à infraestrutura antes do primeiro uso.
-4. O responsável aplica manualmente as alterações indicadas no Compose/Nginx e disponibiliza os serviços necessários.
-5. Executar o mesmo bootstrap novamente. Conferir a infraestrutura efetiva, instalar dependências, preparar Laravel e bancos, gerar o build e validar a integração. Em falhas, corrigir a causa e repetir o comando; ele retoma sem apagar dados.
+3. Preparar o executor e todos os trechos de integração do Compose/Nginx, seguindo instalacao-pwa-framework.md. Conferir nomes, caminhos e portas com o central e a infraestrutura atual antes de aplicar; não copiar valores de outro produto.
+4. O responsável aplica manualmente todas as alterações, valida o Compose, disponibiliza o mount PHP e valida/recarrega o Nginx. Não executar o bootstrap local antes dessa preparação.
+5. Executar o bootstrap pelo serviço pwa-foundation-bootstrap. Ele confere a infraestrutura efetiva, atualiza os trechos do guia e inicializa o backend. Se encontrar divergências, para com código 2: aplicar somente as pendências, validar os serviços afetados e repetir o comando. Integração de frontend/build segue as sprints correspondentes.
 
 **INSTRUÇÃO OBRIGATÓRIA PARA A IA QUE EXECUTAR ESTE README: criar e entregar o bootstrap funcional em Node.js conforme todas as especificações desta seção e as entregas das sprints.** A entrada é scripts/bootstrap/index.mjs, executada pelo Docker em Windows e Linux. Implementar os arquivos JavaScript, módulos, templates, Dockerfile e entrypoint do executor, além do trecho de inclusão manual do serviço pwa-foundation-bootstrap no Compose compartilhado. Não limitar a entrega a documentação, pseudocódigo ou instruções para o usuário programar depois. Não presumir que o inicializador já exista: verificar os arquivos do projeto e criar o que estiver ausente, completando ou corrigindo o que já existir para atender ao contrato. A inicialização de cada clone é distinta da construção da fundação e do app:sync, que continua restrito a limpeza de caches e migrations.
 

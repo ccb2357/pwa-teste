@@ -11,7 +11,7 @@ const entry = fileURLToPath(new URL('../index.mjs', import.meta.url));
 const runtime = fileURLToPath(new URL('../executor/package.json', import.meta.url));
 const example = parseCentral(await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8'));
 // Deterministic Engine/Compose simulation; never connects to or mutates a real Docker Engine.
-async function fixture({ pending = false, production = false } = {}) {
+async function fixture({ pending = false, production = false, desktop = false } = {}) {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-flow-'));
   const projects = tmp + '/projects', root = projects + '/product-a';
   await fs.mkdir(root + '/backend', { recursive: true }); await fs.mkdir(root + '/frontend'); await fs.mkdir(projects + '/infra'); await fs.mkdir(tmp + '/bin');
@@ -20,9 +20,10 @@ async function fixture({ pending = false, production = false } = {}) {
   const values = { ...example, PROJECT_SLUG: 'product-a', LOCAL_DOMAIN: 'product-a.localhost', DB_DATABASE: 'product_a', DB_TEST_DATABASE: 'product_a_test', CONTAINER_PROJECTS_ROOT: projects, APP_ENV: production ? 'production' : 'local', PRODUCTION_URL: production ? 'https://example.com' : '', DB_PASSWORD: 'fixture$special #password' };
   await fs.writeFile(root + '/.env.foundation', Object.entries(values).map(([k, v]) => `${k}='${v}'`).join('\n'));
   const c = validate(values, root);
-  const source = '/srv/apps';
+  const source = desktop ? '/run/desktop/mnt/host/c/var/www' : '/srv/apps';
+  const composeHostRoot = desktop ? 'C:/var/www' : '/srv/apps';
   const mounts = [{ Type: 'bind', Source: source, Destination: projects, RW: true }];
-  const labels = service => ({ 'com.docker.compose.service': service, 'com.docker.compose.project': 'shared-infra', 'com.docker.compose.project.config_files': '/srv/apps/infra/docker-compose.yml', 'com.docker.compose.project.working_dir': '/srv/apps/infra', 'com.docker.compose.oneoff': 'False' });
+  const labels = service => ({ 'com.docker.compose.service': service, 'com.docker.compose.project': 'shared-infra', 'com.docker.compose.project.config_files': composeHostRoot + '/infra/docker-compose.yml', 'com.docker.compose.project.working_dir': composeHostRoot + '/infra', 'com.docker.compose.oneoff': 'False' });
   const php = { Id: 'php-id', Config: { Labels: labels('php-fpm') }, State: { Running: true }, Mounts: [...mounts, ...(!pending ? [{ Type: 'volume', Name: c.vendorVolume, Destination: c.backend + '/vendor' }] : [])], NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const nginx = { Id: 'nginx-id', Config: { Labels: labels('nginx') }, State: { Running: true }, Mounts: mounts, NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const config = { services: { 'php-fpm': { volumes: [{ type: 'volume', source: c.vendorVolume, target: c.backend + '/vendor' }] }, [c.nodeService]: { image: 'node:22-alpine', working_dir: '/app', profiles: ['dev'], networks: { infra_network: {} }, volumes: [{ type: 'bind', source: '/srv/apps/product-a/frontend', target: '/app' }, { type: 'volume', source: c.modulesVolume, target: '/app/node_modules' }], ports: [{ target: 5173, published: '5176', host_ip: '127.0.0.1' }] } }, volumes: { [c.vendorVolume]: { name: c.vendorVolume }, [c.modulesVolume]: { name: c.modulesVolume } } };
@@ -68,9 +69,25 @@ test('preparation exits 2 before dependencies/env writes when effective infra is
     const guide = await fs.readFile(f.root + '/instalacao-pwa-framework.md', 'utf8');
     assert.match(guide, /product-a-node/); assert.match(guide, /product_a_vendor/);
     assert.match(guide, /server_name product-a.localhost/);
+    const firstRun = guide.indexOf('docker compose run --rm pwa-foundation-bootstrap --project');
+    assert.ok(guide.indexOf('### 3.4 Site Nginx') < guide.indexOf('## 4. Validar e aplicar a infraestrutura'));
+    assert.ok(guide.indexOf('## 4. Validar e aplicar a infraestrutura') < firstRun);
+    assert.ok(guide.indexOf('## 5. Executar o bootstrap') < firstRun);
     assert.match(result.stderr, /instalacao-pwa-framework.md/);
     await assert.rejects(fs.access(f.root + '/infra-generated'));
     assert.doesNotMatch(result.stdout + result.stderr, /fixture\$special/);
+  } finally { await f.cleanup(); }
+});
+test('Desktop mount and Windows labels discover the same Compose and reach the pending stage', async () => {
+  const f = await fixture({ pending: true, desktop: true });
+  try {
+    const result = await f.invoke();
+    assert.equal(result.code, 2, result.stdout + result.stderr);
+    const data = await f.data();
+    assert.equal(data.installs, 0);
+    assert.ok(data.calls.some(a => a[0] === 'compose' && a.includes('config')));
+    assert.match(await fs.readFile(f.root + '/instalacao-pwa-framework.md', 'utf8'), /C:\\\\var\\\\www\\\\product-a\\\\frontend/);
+    await assert.rejects(fs.access(f.root + '/backend/.env'));
   } finally { await f.cleanup(); }
 });
 test('initialized flow preserves keys and skips unchanged dependencies on reexecution', async () => {

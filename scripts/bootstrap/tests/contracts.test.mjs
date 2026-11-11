@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { parseCentral, validate, args, contained } from '../lib/config.mjs';
-import { mapPath, mappedPaths, infraProblems } from '../lib/docker.mjs';
+import { mapPath, mappedPaths, infraProblems, sameHost } from '../lib/docker.mjs';
 import { managedEnv, appKey, checkIdentity, identity, writeAtomic } from '../lib/files.mjs';
 import { composeSnippet, nginxSnippet, siteApplied, viteCmd } from '../lib/templates.mjs';
 import { run } from '../lib/process.mjs';
@@ -54,6 +54,19 @@ test('effective mount mapping is mandatory', () => {
   assert.throws(() => mappedPaths({ Mounts: [] }, config()));
   const result = mappedPaths({ Mounts: [{ Type: 'bind', Source: 'C:\\var\\www', Destination: '/var/www' }] }, config());
   assert.equal(result.toHost('/var/www/pwa-teste'), 'C:\\var\\www\\pwa-teste');
+});
+test('Docker Desktop mount aliases match Windows Compose labels without escaping the root', () => {
+  const source = '/run/desktop/mnt/host/c/var/www';
+  const mapping = mappedPaths({ Mounts: [{ Type: 'bind', Source: source, Destination: '/var/www' }] }, config());
+  assert.equal(mapping.toInternal('C:\\var\\www\\infra\\docker-compose.yml'), '/var/www/infra/docker-compose.yml');
+  assert.equal(mapping.toInternal(source + '/infra/docker-compose.yml'), '/var/www/infra/docker-compose.yml');
+  assert.equal(mapping.toHost('/var/www/pwa-teste/frontend'), 'C:\\var\\www\\pwa-teste\\frontend');
+  assert.equal(sameHost(source, 'C:\\var\\www'), true);
+  assert.equal(sameHost('C:\\var\\www', source), true);
+  assert.equal(sameHost(source, 'D:\\var\\www'), false);
+  assert.equal(sameHost(source, '/var/www'), false);
+  assert.throws(() => mapping.toInternal('C:\\var\\other\\file'));
+  assert.throws(() => mapping.toInternal(source + '/../other/file'));
 });
 test('central target cannot escape through symlink', async () => {
   const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-containment-'));

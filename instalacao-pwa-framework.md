@@ -8,9 +8,13 @@ Os blocos abaixo são trechos de integração próprios da aplicação. Não sã
 
 ## Instalação local da Sprint 1
 
+Siga a ordem abaixo: configuração → Compose e Nginx → validação e aplicação → bootstrap → diagnóstico.
+
+## 1. Preparar a pasta e a configuração
+
 Aplicar o conteúdo do pacote para que a raiz seja C:\var\www\pwa-teste, sem uma segunda pasta pwa-teste aninhada. Preservar arquivos privados e volumes existentes. O pacote é cumulativo e não contém vendor, node_modules, .env preenchidos ou APP_KEY.
 
-1. Preparar o arquivo de configuração central **manualmente**:
+Prepare o arquivo de configuração central **manualmente**:
 
    - Abra a pasta `C:\var\www\pwa-teste` no Explorador de Arquivos.
    - Se `.env.foundation` ainda não existir, copie o arquivo `.env.foundation.example` nessa mesma pasta e renomeie a cópia para `.env.foundation`, sem acrescentar `.txt` ao nome.
@@ -19,7 +23,9 @@ Aplicar o conteúdo do pacote para que a raiz seja C:\var\www\pwa-teste, sem uma
 
 Preencher DB_PASSWORD localmente com a senha da conta existente e conferir os demais campos. Não enviar senhas no chat. O exemplo usa root porque essa é a conta existente informada; não criar outra conta nem alterar grants.
 
-2. Em `C:\var\www\infra\docker-compose.yml`, acrescentar o serviço abaixo ao `services` existente. Não duplicar a chave `services` nem criar outro Compose.
+## 2. Adicionar o executor ao Compose
+
+Em `C:\var\www\infra\docker-compose.yml`, acrescentar o serviço abaixo ao `services` existente. Não duplicar a chave `services` nem criar outro Compose.
 
 ```yaml
 # TRECHO: incluir somente pwa-foundation-bootstrap no services do Compose EXISTENTE.
@@ -42,25 +48,15 @@ services:
             - tools
 ```
 
-O template usa build context ../pwa-teste/scripts/bootstrap, imagem pwa-foundation-bootstrap:0.1.0, raiz ../:/var/www, socket /var/run/docker.sock e rede infra_network. Perfil tools; nomear explicitamente o serviço em compose run o ativa sem subir todo o perfil. Em outra organização de pastas/socket, adaptar o template uma vez ao ambiente real. Depois do primeiro build, a imagem/entrypoint são compartilhados; o código de inicialização é sempre lido do projeto alvo.
-
-3. Abra o **Prompt de Comando (CMD)**. Entre na pasta infra, valide a configuração, construa somente o executor e inicie a preparação. Execute os comandos abaixo um por vez; se a validação ou o build falhar, corrija antes de continuar:
-
-```cmd
-cd /d C:\var\www\infra
-docker compose --profile dev --profile tools config --quiet
-docker compose build pwa-foundation-bootstrap
-docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
-echo %ERRORLEVEL%
-```
-
-Na primeira execução sem recursos pwa-teste, o código esperado é **2**: os blocos gerenciados deste instalacao-pwa-framework.md foram atualizados com os valores do ambiente e a instalação PHP ainda não iniciou. Corrigir erro de build/CLI/socket antes de prosseguir; não declarar sucesso pelo fato de a imagem existir.
+Se o serviço já existir com esses valores, mantenha-o. Salve o Compose. Ainda não execute o bootstrap.
 
 <!-- BEGIN FOUNDATION INSTALL INFRA -->
 
-4. Aplicar as alterações abaixo, geradas para o ambiente **local** e o projeto **pwa-teste**. Este bloco é atualizado pelo bootstrap a partir da configuração central e dos mounts reais; o restante do guia é preservado.
+## 3. Preparar serviço Node, mount, volumes e site
 
-### 4.1 Serviço Node no Compose existente
+Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **local** e o projeto **pwa-teste**. Não duplique entradas que já estejam corretas. Os valores desta entrega estão prontos para pwa-teste local; se o central usar outros nomes, caminhos ou portas, ajuste os trechos para esse ambiente antes de aplicá-los. O bootstrap atualiza este bloco ao conferir o ambiente, preservando o restante do guia.
+
+### 3.1 Serviço Node no Compose existente
 
 Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. O frontend será implementado na Sprint 2; não iniciar o serviço agora.
 
@@ -82,7 +78,7 @@ services:
             - dev
 ```
 
-### 4.2 Mount vendor no PHP-FPM existente
+### 3.2 Mount vendor no PHP-FPM existente
 
 No mesmo Compose, localizar `services.php-fpm.volumes` e acrescentar somente a linha abaixo. Preservar os mounts atuais; não criar outro serviço PHP nem substituir sua lista de volumes.
 
@@ -90,7 +86,7 @@ No mesmo Compose, localizar `services.php-fpm.volumes` e acrescentar somente a l
 - pwa_teste_vendor:/var/www/pwa-teste/backend/vendor
 ```
 
-### 4.3 Declaração dos volumes ao final do Compose
+### 3.3 Declaração dos volumes ao final do Compose
 
 No mesmo arquivo, mesclar estas declarações no bloco `volumes` de nível raiz, no mesmo nível de `services` e `networks`. Se o bloco ainda não existir, criá-lo. O mount do passo anterior e esta declaração são necessários.
 
@@ -102,7 +98,7 @@ volumes:
         name: pwa_teste_node_modules
 ```
 
-### 4.4 Site Nginx
+### 3.4 Site Nginx
 
 No arquivo de sites ativo do Nginx, acrescentar o bloco abaixo preservando os outros sites. Nesta infraestrutura local, o destino é `C:\var\www\infra\nginx\sites_local.conf`. Em produção, usar o arquivo realmente montado e conferir os certificados. O root desta release é `backend/public`; não apontar para `frontend/dist` antes da Sprint 4.
 
@@ -129,24 +125,46 @@ server {
 
 <!-- END FOUNDATION INSTALL INFRA -->
 
-5. Validar o Compose e recriar apenas PHP-FPM para aplicar o novo vendor mount. Isso causa uma breve interrupção dos sites PHP compartilhados. Não reconstruir a imagem PHP: Composer e extensões já existem. Validar/recarregar somente o Nginx:
+## 4. Validar e aplicar a infraestrutura
+
+Somente depois de salvar **todas** as alterações das etapas 2 e 3, abra o **Prompt de Comando (CMD)**. Execute uma linha por vez; se um comando falhar, corrija antes de continuar.
+
+Entre na pasta da infraestrutura, valide o Compose e construa a imagem do executor:
 
 ```cmd
 cd /d C:\var\www\infra
 docker compose --profile dev --profile tools config --quiet
+docker compose build pwa-foundation-bootstrap
+```
+
+A validação `config --quiet` não mostra nada quando está correta. Se a imagem do executor já estiver construída e seu Dockerfile não mudou, não é necessário reconstruí-la.
+
+Recrie somente o PHP-FPM para aplicar o mount vendor. Isso interrompe brevemente os sites PHP compartilhados; não é necessário reconstruir a imagem PHP.
+
+```cmd
 docker compose up -d --no-deps --force-recreate php-fpm
+```
+
+Valide o Nginx e recarregue somente se a validação passar:
+
+```cmd
 docker compose exec -T nginx nginx -t && docker compose exec -T nginx nginx -s reload
 ```
 
-Se nginx -t falhar, corrigir antes do reload. Não usar up do perfil inteiro, down -v ou apagar volumes. O serviço pwa-teste-node precisa estar declarado, mas não ficar rodando; o frontend ainda pertence à Sprint 2.
+Não execute `down -v` nem inicie todo o perfil dev. O serviço Node deve estar declarado, mas não precisa estar rodando nesta sprint.
 
-6. Repetir o mesmo bootstrap:
+## 5. Executar o bootstrap
+
+Agora o serviço Node, os volumes, o mount PHP-FPM e o site Nginx devem estar configurados e aplicados. Execute:
 
 ```cmd
-cd /d C:\var\www\infra
 docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
 echo %ERRORLEVEL%
 ```
+
+O código esperado ao concluir esta etapa é **0**. Se retornar **2**, ainda existe alguma pendência: leia a lista exibida, confira as alterações da etapa 3, aplique-as conforme a etapa 4 e repita este comando. Não é necessário refazer as etapas que já estiverem corretas. Código **1** indica erro; envie a mensagem para análise.
+
+## 6. Conferir o resultado
 
 O bootstrap verifica as dependências, a configuração, os bancos, as migrations e a comunicação com o backend. Se terminar com código **0**, o backend da Sprint 1 está pronto. Confira:
 

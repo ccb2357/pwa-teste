@@ -4,7 +4,7 @@
 
 Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. Sprint 1: código entregue e verificações abaixo executadas em ambiente temporário do agente. **Instalação e aceite na infraestrutura Windows do responsável ainda pendentes.** Não declarar fundação completa ou avançar ao aceite da Sprint 2 sem integração real.
 
-Próximo passo concreto: aplicar pacote cumulativo, preencher .env.foundation privado, incluir pwa-foundation-bootstrap no Compose existente, buildar executor e executar preparação; aplicar fragmentos gerados manualmente, recriar só PHP-FPM para vendor, validar/recarregar Nginx e repetir bootstrap. Roteiro completo em instalacao-pwa-framework.md. Depois enviar resultado final e executar suíte PHP com grupo MySQL real.
+Próximo passo concreto: preencher .env.foundation, aplicar todos os blocos Compose/Nginx do guia (executor, Node, mount vendor e volumes), validar Compose, construir executor se necessário, recriar só PHP-FPM, validar/recarregar Nginx e então executar bootstrap. A saída real recebida já confirma que a descoberta Docker Desktop passou; ainda faltam Node, volumes, mount vendor e site Nginx. Roteiro completo em instalacao-pwa-framework.md.
 
 ## Entregue
 
@@ -100,3 +100,10 @@ Guia de instalação renomeado para instalacao-pwa-framework.md por solicitaçã
 
 
 Clareza do guia: reescrito o resultado da retomada do bootstrap, com significado do código 0 e links identificados para os três diagnósticos. Escopo do aceite permanece limitado ao backend da Sprint 1.
+
+
+## Ordem operacional da instalação local — 2026-11-11
+
+Guia revisado após relato do responsável: a primeira execução do bootstrap estava antes das alterações obrigatórias, gerando uma lista de pendências que o roteiro deveria antecipar. Nova ordem: configurar central; incluir executor; aplicar Node/mount/volumes/Nginx; validar e aplicar infraestrutura; executar bootstrap; conferir diagnóstico. O gerador mantém a mesma numeração e ordem ao atualizar o guia. README alinhado. Código 2 é fluxo de correção de pendências, não etapa obrigatória inicial do roteiro local.
+
+Verificação desta revisão: 23 testes do bootstrap passaram; o teste de preparação também confere que os blocos de infraestrutura e sua aplicação antecedem a primeira execução no guia regenerado. Pendências reais recebidas do responsável não foram apresentadas como já aplicadas.

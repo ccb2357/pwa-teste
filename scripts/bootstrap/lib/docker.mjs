@@ -4,7 +4,12 @@ import { docker, jsonOutput } from './process.mjs';
 import { requireThat } from './errors.mjs';
 const labels = x => x.Config?.Labels || {};
 const hostPath = value => /^[A-Za-z]:[\\/]/.test(value) ? path.win32 : path.posix;
+function canonicalHost(value) {
+  const desktop = value.match(/^\/run\/desktop\/mnt\/host\/([a-z])(?:\/(.*))?$/i);
+  return desktop ? path.win32.join(desktop[1].toUpperCase() + ':\\', ...(desktop[2] || '').split('/')) : value;
+}
 export function mapPath(value, from, to) {
+  value = canonicalHost(value); from = canonicalHost(from); to = canonicalHost(to);
   const api = hostPath(from);
   const relative = api.relative(from, value);
   requireThat(relative !== '..' && !relative.startsWith('..' + api.sep) && !api.isAbsolute(relative), 'Caminho fora do mount mapeado; configure a raiz compartilhada corretamente.');
@@ -16,7 +21,7 @@ export function mappedPaths(php, c) {
   const mount = mounts[0];
   requireThat(!/[\r\n,]/.test(mount.Source), 'Raiz host com separador não suportado; ajuste o mapeamento explicitamente.');
   return {
-    hostRoot: mount.Source, internalRoot: mount.Destination,
+    hostRoot: canonicalHost(mount.Source), internalRoot: mount.Destination,
     toHost: value => mapPath(value, mount.Destination, mount.Source),
     toInternal: value => mapPath(value, mount.Source, mount.Destination),
   };
@@ -60,6 +65,7 @@ export function resolveBind(source, d) {
   return hostPath(d.hostDir).resolve(d.hostDir, source);
 }
 export function sameHost(a, b) {
+  a = canonicalHost(a); b = canonicalHost(b);
   const api = hostPath(a);
   return api === path.win32 ? api.normalize(a).toLowerCase() === api.normalize(b).toLowerCase() : api.normalize(a) === api.normalize(b);
 }

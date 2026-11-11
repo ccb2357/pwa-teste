@@ -1,6 +1,6 @@
 # Ambiente e inicialização
 
-O roteiro único de instalação, trechos Compose/Nginx, comandos de teste, operação diária e VPS está em [instalacao-pwa-framework.md](../../instalacao-pwa-framework.md), na raiz. Este documento mantém o contrato técnico do ambiente.
+O roteiro único de instalação, trechos Compose/Nginx, comandos de teste, operação diária e VPS está em [instalacao-pwa-framework.md](../../instalacao-pwa-framework.md), na raiz. Este documento mantém o contrato técnico do ambiente. Na instalação local desta entrega, configurar e aplicar todos os recursos da infraestrutura antes de executar o bootstrap; código 2 indica pendências a corrigir, não uma passagem obrigatória do roteiro.
 
 ## Mapeamento observado em 2026-11-11
 
