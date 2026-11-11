@@ -110,3 +110,6 @@ Verificação desta revisão: 23 testes do bootstrap passaram; o teste de prepar
 
 
 Removido do início do guia o texto introdutório indicado pelo responsável; o conteúdo começa diretamente na etapa 1 após o título. Etapas e comandos preservados.
+
+
+Removido do guia o parágrafo sobre preenchimento de DB_PASSWORD e conta root, conforme solicitado pelo responsável. Demais instruções preservadas.

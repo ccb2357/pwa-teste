@@ -11,8 +11,6 @@ Prepare o arquivo de configuração central **manualmente**:
    - Se `.env.foundation` já existir, mantenha o arquivo atual; não o substitua pelo exemplo.
    - Abra `.env.foundation` no VSCode ou em outro editor de texto, confira os campos e salve as alterações.
 
-Preencher DB_PASSWORD localmente com a senha da conta existente e conferir os demais campos. Não enviar senhas no chat. O exemplo usa root porque essa é a conta existente informada; não criar outra conta nem alterar grants.
-
 ## 2. Adicionar o executor ao Compose
 
 Em `C:\var\www\infra\docker-compose.yml`, acrescentar o serviço abaixo ao `services` existente. Não duplicar a chave `services` nem criar outro Compose.
