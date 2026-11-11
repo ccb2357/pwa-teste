@@ -78,3 +78,19 @@ Removida integralmente docs/referencias/infra e seus cinco arquivos (Compose, Do
 ## Pasta de imagens das telas — 2026-11-11
 
 Caminho vigente: docs/telas/, diretamente sob docs. Pasta movida, README e caminhos relativos nos SDD de telas e design system atualizados. Usar esse caminho nas próximas entregas. Em cópias anteriores, mover as imagens existentes para docs/telas e remover a pasta intermediária vazia. Verificados os caminhos documentais e o ZIP; sem alteração de código executável.
+
+
+## Preparação manual do arquivo central — 2026-11-11
+
+O passo 1 de instalacao.md orienta copiar .env.foundation.example, renomear a cópia para .env.foundation somente se ausente e editar/salvar manualmente. Removido o bloco PowerShell desse passo por solicitação do responsável. Demais comandos de instalação preservados. Alteração somente documental.
+
+
+Ajuste documental: removida de instalacao.md a orientação de renomear o serviço antigo; o guia usa diretamente pwa-foundation-bootstrap.
+
+
+## Terminal de instalação local — 2026-11-11
+
+Por solicitação do responsável, os comandos locais de instalacao.md usam Prompt de Comando (CMD): cd /d para navegação e echo %ERRORLEVEL% para consultar a saída. Validação Nginx seguida de reload usa && para impedir reload após falha. Removida a sintaxe PowerShell do guia. Alteração documental; comandos não executados no Windows pelo agente.
+
+
+Revisão geral de terminais: instruções operacionais restantes do README ajustadas para CMD no Windows. Menções a PowerShell mantidas somente no histórico e na restrição técnica de independência de shell do bootstrap.

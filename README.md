@@ -104,7 +104,7 @@ Contrato obrigatório do executor a implementar:
 - Carregar dotenv como dados usando parser disponível antes da instalação do frontend. Qualquer dependência do executor deve estar fixada e instalada na imagem/lockfile próprio do executor; ele não pode depender do node_modules do aplicativo que ainda está sendo preparado.
 - Saídas: 0 para conclusão validada, 1 para erro, 2 para infraestrutura/aplicação manual pendente. Encaminhar corretamente o código ao terminal; registrar estados sem segredos. A disponibilidade de portas no host deve ser conferida por mecanismo apropriado ao host, sem interpretar uma porta livre dentro do executor como prova de disponibilidade no Windows/VPS.
 
-Exemplo de interface a entregar, executada na pasta infra em PowerShell, CMD ou terminal Linux, supondo a raiz interna /var/www e o serviço já integrado:
+Exemplo de interface a entregar, executada na pasta infra pelo Prompt de Comando (CMD) no Windows ou pelo terminal Linux, supondo a raiz interna /var/www e o serviço já integrado:
 
 ```text
 docker compose run --rm pwa-foundation-bootstrap --project /var/www/meu-projeto
@@ -470,7 +470,7 @@ vite dev
 vite build
 ```
 
-No PowerShell, utilizar `./vite.cmd dev` e `./vite.cmd build`.
+No Prompt de Comando (CMD), dentro da pasta frontend, utilizar `vite.cmd dev` e `vite.cmd build`.
 
 O bootstrap deve gerar o atalho a partir do caminho Compose central e do serviço derivado. O modelo abaixo ilustra a saída; os nomes e caminhos fixos não são uma segunda fonte de configuração:
 
@@ -951,7 +951,7 @@ Listar somente os contêineres Node do projeto e preferir docker stop com o ID i
 docker ps --filter "label=com.docker.compose.service=pwa-teste-node" --format "table {{.ID}}\t{{.Names}}\t{{.Ports}}"
 ```
 
-Para encerrar todos os contêineres desse serviço, incluindo dev e prévias, somente quando essa interrupção for desejada, usar em CMD/Cmder interativo (em .bat, trocar %i por %%i; não é sintaxe PowerShell):
+Para encerrar todos os contêineres desse serviço, incluindo dev e prévias, somente quando essa interrupção for desejada, usar em CMD/Cmder interativo (em .bat, trocar %i por %%i):
 
 ```bat
 for /f %i in ('docker ps -q --filter "label=com.docker.compose.service=pwa-teste-node"') do docker stop %i

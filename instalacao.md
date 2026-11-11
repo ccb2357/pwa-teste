@@ -1,6 +1,6 @@
 # Instalação — PWA Framework
 
-Este é o roteiro único de instalação e operação desta entrega. Todos os trechos de Compose e Nginx estão neste arquivo; não é necessário abrir outros arquivos para copiá-los.
+Este é o roteiro único de instalação e operação desta entrega. Os comandos locais devem ser executados no **Prompt de Comando (CMD)**. Todos os trechos de Compose e Nginx estão neste arquivo; não é necessário abrir outros arquivos para copiá-los.
 
 Se estiver atualizando uma entrega anterior, remova os antigos `scripts/bootstrap/executor/compose-service.yml` e `infra-generated/` da cópia do projeto; eles foram substituídos por este guia. Preserve `.env.foundation`, os arquivos `.env`, os volumes e as configurações já aplicadas na pasta `infra`.
 
@@ -10,17 +10,16 @@ Os blocos abaixo são trechos de integração próprios da aplicação. Não sã
 
 Aplicar o conteúdo do pacote para que a raiz seja C:\var\www\pwa-teste, sem uma segunda pasta pwa-teste aninhada. Preservar arquivos privados e volumes existentes. O pacote é cumulativo e não contém vendor, node_modules, .env preenchidos ou APP_KEY.
 
-1. No PowerShell, criar o central **somente se ainda não existir**:
+1. Preparar o arquivo de configuração central **manualmente**:
 
-```powershell
-Set-Location C:\var\www\pwa-teste
-if (-not (Test-Path .env.foundation)) { Copy-Item .env.foundation.example .env.foundation }
-notepad .env.foundation
-```
+   - Abra a pasta `C:\var\www\pwa-teste` no Explorador de Arquivos.
+   - Se `.env.foundation` ainda não existir, copie o arquivo `.env.foundation.example` nessa mesma pasta e renomeie a cópia para `.env.foundation`, sem acrescentar `.txt` ao nome.
+   - Se `.env.foundation` já existir, mantenha o arquivo atual; não o substitua pelo exemplo.
+   - Abra `.env.foundation` no VSCode ou em outro editor de texto, confira os campos e salve as alterações.
 
 Preencher DB_PASSWORD localmente com a senha da conta existente e conferir os demais campos. Não enviar senhas no chat. O exemplo usa root porque essa é a conta existente informada; não criar outra conta nem alterar grants.
 
-2. Em `C:\var\www\infra\docker-compose.yml`, acrescentar o serviço abaixo ao `services` existente. Não duplicar a chave `services` nem criar outro Compose. Se o executor já estiver cadastrado com o nome antigo `foundation-bootstrap`, renomear essa chave para `pwa-foundation-bootstrap`.
+2. Em `C:\var\www\infra\docker-compose.yml`, acrescentar o serviço abaixo ao `services` existente. Não duplicar a chave `services` nem criar outro Compose.
 
 ```yaml
 # TRECHO: incluir somente pwa-foundation-bootstrap no services do Compose EXISTENTE.
@@ -45,14 +44,14 @@ services:
 
 O template usa build context ../pwa-teste/scripts/bootstrap, imagem pwa-foundation-bootstrap:0.1.0, raiz ../:/var/www, socket /var/run/docker.sock e rede infra_network. Perfil tools; nomear explicitamente o serviço em compose run o ativa sem subir todo o perfil. Em outra organização de pastas/socket, adaptar o template uma vez ao ambiente real. Depois do primeiro build, a imagem/entrypoint são compartilhados; o código de inicialização é sempre lido do projeto alvo.
 
-3. Na pasta infra, validar, construir somente o executor e iniciar a preparação:
+3. Abra o **Prompt de Comando (CMD)**. Entre na pasta infra, valide a configuração, construa somente o executor e inicie a preparação. Execute os comandos abaixo um por vez; se a validação ou o build falhar, corrija antes de continuar:
 
-```powershell
-Set-Location C:\var\www\infra
+```cmd
+cd /d C:\var\www\infra
 docker compose --profile dev --profile tools config --quiet
 docker compose build pwa-foundation-bootstrap
 docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
-$LASTEXITCODE
+echo %ERRORLEVEL%
 ```
 
 Na primeira execução sem recursos pwa-teste, o código esperado é **2**: os blocos gerenciados deste instalacao.md foram atualizados com os valores do ambiente e a instalação PHP ainda não iniciou. Corrigir erro de build/CLI/socket antes de prosseguir; não declarar sucesso pelo fato de a imagem existir.
@@ -132,23 +131,21 @@ server {
 
 5. Validar o Compose e recriar apenas PHP-FPM para aplicar o novo vendor mount. Isso causa uma breve interrupção dos sites PHP compartilhados. Não reconstruir a imagem PHP: Composer e extensões já existem. Validar/recarregar somente o Nginx:
 
-```powershell
-Set-Location C:\var\www\infra
+```cmd
+cd /d C:\var\www\infra
 docker compose --profile dev --profile tools config --quiet
 docker compose up -d --no-deps --force-recreate php-fpm
-docker compose exec -T nginx nginx -t
-if ($LASTEXITCODE -ne 0) { throw "Corrija a configuração do Nginx antes de recarregar." }
-docker compose exec -T nginx nginx -s reload
+docker compose exec -T nginx nginx -t && docker compose exec -T nginx nginx -s reload
 ```
 
 Se nginx -t falhar, corrigir antes do reload. Não usar up do perfil inteiro, down -v ou apagar volumes. O serviço pwa-teste-node precisa estar declarado, mas não ficar rodando; o frontend ainda pertence à Sprint 2.
 
 6. Repetir o mesmo bootstrap:
 
-```powershell
-Set-Location C:\var\www\infra
+```cmd
+cd /d C:\var\www\infra
 docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
-$LASTEXITCODE
+echo %ERRORLEVEL%
 ```
 
 Agora ele confere vendor efetivo, plataforma, configuração, bancos, migrations e HTTP/CSRF. Ao término bem-sucedido da etapa backend, abrir http://pwa-teste.localhost/status. JSON em http://pwa-teste.localhost/api/v1/status; saúde padrão em http://pwa-teste.localhost/up. Código 0 nesta release significa backend da Sprint 1 inicializado; não atesta frontend, PWA ou conclusão integral da fundação.
@@ -158,8 +155,8 @@ Agora ele confere vendor efetivo, plataforma, configuração, bancos, migrations
 
 Os resultados reais, inclusive o que foi apenas simulado, ficam em [MEMORY.md](MEMORY.md). Ao assumir ou retomar uma análise da infraestrutura, solicitar ao responsável os arquivos atuais necessários; não presumir que o histórico ainda represente a configuração real. Arquivos atuais já enviados na mesma sessão podem ser reutilizados enquanto não houver indicação de mudança. Após instalação do backend local, na pasta infra:
 
-```powershell
-Set-Location C:\var\www\infra
+```cmd
+cd /d C:\var\www\infra
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan test --env=testing
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php vendor/bin/pint --test
 docker compose run --rm --entrypoint node pwa-foundation-bootstrap --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
@@ -167,7 +164,7 @@ docker compose run --rm --entrypoint node pwa-foundation-bootstrap --test /var/w
 
 A suíte completa inclui grupo mysql: consulta real, status saudável, app:sync duas vezes no banco testing e falha só na conexão daquele processo. Não desligar o MySQL compartilhado. Para executar apenas contratos determinísticos sem a integração saudável MySQL, usar:
 
-```powershell
+```cmd
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan test --env=testing --exclude-group=mysql
 ```
 
@@ -179,8 +176,8 @@ Testes do bootstrap simulam Engine/Compose de forma explícita e não comprovam 
 
 Comando implementado: optimize:clear e, só após sucesso, migrate com migrations pendentes. Propaga falha/código e não anuncia sucesso parcial. Não instala dependências, builda, semeia, apaga dados ou gera chaves. Em produção, --force obrigatório antes de limpar caches e repassado somente às migrations.
 
-```powershell
-Set-Location C:\var\www\infra
+```cmd
+cd /d C:\var\www\infra
 docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan app:sync
 ```
 
