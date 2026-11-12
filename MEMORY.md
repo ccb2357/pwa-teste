@@ -165,3 +165,8 @@ O responsável aprovou a Hello e solicitou FAB Speed Dial em vez de dialog. Usad
 Decisão aprovada: manter Dockerfile, entrypoint e lógica Node existentes; substituir somente a forma de iniciar o executor por docker build e docker run --rm, sem foundation.cmd/foundation.sh. Guia inclui remoção manual exclusiva do serviço antigo, build sem cache opcional para validar a migração, execução CMD/Linux e testes bootstrap temporários sem socket (Engine simulado). Gerador de infraestrutura explicita que não se cadastra executor no Compose. README, AGENTS e contrato de ambiente alinhados. Backend, frontend, central, volumes e serviços do aplicativo preservados. Execução real por docker run no Windows/VPS ainda pendente.
 
 Verificação desta mudança: 31 testes Node passaram (27 bootstrap/orquestração com Engine/Compose simulados e 4 cliente API). Guia regenerado conserva execução direta, ausência de serviço do executor e ordem infraestrutura → execução. Pacote conserva Dockerfile, entrypoint, manifests/lockfiles, backend e frontend idênticos à entrega anterior. Não foi realizado build novo nem docker run real no ambiente do responsável.
+
+
+## Comandos do executor em linha única — 2026-11-12
+
+Após o responsável colar as continuações e echo juntos, o bootstrap rejeitou os argumentos extras. Guia corrigido: docker run em uma linha inteira no CMD, testes e VPS; echo %ERRORLEVEL% em bloco separado, somente após o retorno do prompt. Sem mudança de runtime. Conferidos os argumentos e a integridade do pacote. Nova execução real ainda pendente.

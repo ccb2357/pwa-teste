@@ -133,18 +133,16 @@ Não execute `down -v` nem inicie todo o perfil dev. O bootstrap prepara as depe
 Agora o serviço Node, os volumes, o mount PHP-FPM e o site Nginx devem estar configurados e aplicados. Execute:
 
 ```cmd
-docker run --rm ^
-  --workdir /var/www/infra ^
-  --env FOUNDATION_PROJECTS_ROOT=/var/www ^
-  --mount "type=bind,source=C:\var\www,target=/var/www" ^
-  --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock ^
-  --network infra_network ^
-  pwa-foundation-bootstrap:0.1.0 ^
-  --project /var/www/pwa-teste
+docker run --rm --workdir /var/www/infra --env FOUNDATION_PROJECTS_ROOT=/var/www --mount "type=bind,source=C:\var\www,target=/var/www" --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --network infra_network pwa-foundation-bootstrap:0.1.0 --project /var/www/pwa-teste
+```
+
+Quando o comando terminar e o prompt voltar, execute separadamente:
+
+```cmd
 echo %ERRORLEVEL%
 ```
 
-O `^` continua o comando na linha seguinte no CMD. Ao terminar, o contêiner é removido; a imagem e os dados do projeto permanecem.
+Ao terminar, o contêiner é removido; a imagem e os dados do projeto permanecem.
 
 O código esperado ao concluir esta etapa é **0**. Se retornar **2**, ainda existe alguma pendência: leia a lista exibida, confira as alterações da etapa 3, aplique-as conforme a etapa 4 e repita este comando. Não é necessário refazer as etapas que já estiverem corretas. Código **1** indica erro; envie a mensagem para análise.
 
@@ -202,12 +200,7 @@ docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php vendor/bin/pint
 Testes do bootstrap:
 
 ```cmd
-docker run --rm ^
-  --workdir /var/www/infra ^
-  --mount "type=bind,source=C:\var\www,target=/var/www" ^
-  --entrypoint node ^
-  pwa-foundation-bootstrap:0.1.0 ^
-  --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
+docker run --rm --workdir /var/www/infra --mount "type=bind,source=C:\var\www,target=/var/www" --entrypoint node pwa-foundation-bootstrap:0.1.0 --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
 ```
 
 Testes do cliente API frontend, na pasta infra:
@@ -233,14 +226,7 @@ Na pasta infra da VPS, com `.env.foundation` de produção, Compose, Nginx e HTT
 
 ```bash
 docker build -t pwa-foundation-bootstrap:0.1.0 ../pwa-teste/scripts/bootstrap
-docker run --rm \
-  --workdir /var/www/infra \
-  --env FOUNDATION_PROJECTS_ROOT=/var/www \
-  --mount type=bind,source=/var/www,target=/var/www \
-  --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
-  --network infra_network \
-  pwa-foundation-bootstrap:0.1.0 \
-  --project /var/www/pwa-teste --force
+docker run --rm --workdir /var/www/infra --env FOUNDATION_PROJECTS_ROOT=/var/www --mount type=bind,source=/var/www,target=/var/www --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --network infra_network pwa-foundation-bootstrap:0.1.0 --project /var/www/pwa-teste --force
 ```
 
 Para atualizar: faça backup, execute `git pull` na pasta do projeto e repita o comando acima na pasta infra. Ajuste o source do mount, a raiz interna, a rede e os caminhos ao ambiente real da VPS. A imagem só precisa ser reconstruída quando seu conteúdo mudar.
