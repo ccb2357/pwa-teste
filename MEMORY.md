@@ -4,7 +4,7 @@
 
 Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. **Sprint 1 validada no Windows/Docker do responsável. Sprint 2 instalada com aparência aprovada pelo responsável; ajuste do FAB entregue para nova conferência.** Backend preservado; frontend Framework7 Vue, Hello, grid/CSS nativos, Nunito local e integrações npm/configuração pública disponíveis. Sem outra biblioteca de estilos. Não declarar aceite visual, HMR no Windows ou integração frontend/MySQL local do responsável sem sua confirmação.
 
-Próximo passo concreto: aplicar o pacote cumulativo preservando privados/volumes; remover somente o serviço pwa-foundation-bootstrap do Compose; construir a imagem com --no-cache para testar a migração e executar docker run --rm conforme a etapa 5 do guia. Não refazer integrações da infraestrutura já aplicadas. Confirmar sucesso e reexecução antes da Sprint 3. PWA/worker na Sprint 4, push na 5, fechamento na 6.
+Próximo passo concreto: Sprint 3, após solicitação do responsável. Execução direta do executor no Windows confirmada com código 0; não repetir a migração nem renomear o projeto existente por causa dos exemplos do manual. PWA/worker na Sprint 4, push na 5, fechamento na 6.
 
 ## Entregue
 
@@ -170,3 +170,8 @@ Verificação desta mudança: 31 testes Node passaram (27 bootstrap/orquestraç�
 ## Comandos do executor em linha única — 2026-11-12
 
 Após o responsável colar as continuações e echo juntos, o bootstrap rejeitou os argumentos extras. Guia corrigido: docker run em uma linha inteira no CMD, testes e VPS; echo %ERRORLEVEL% em bloco separado, somente após o retorno do prompt. Sem mudança de runtime. Conferidos os argumentos e a integridade do pacote. Nova execução real ainda pendente.
+
+
+## Manual independente da pasta do projeto — 2026-11-12
+
+O responsável confirmou docker run real no Windows com saída 0, backend verificado e dependências preservadas. Migração do executor fora do Compose validada nesse ambiente. Por solicitação posterior, o manual usa meu-projeto/meu_projeto como exemplos em pastas, comandos, domínios, serviços e volumes; nomes/caminhos/portas/rede devem seguir o central e a infraestrutura real. Gerador não contém mais a suposição pwa-teste local: seu bloco gerenciado continua refletindo o alvo real descoberto, preservando os exemplos externos. Projeto, central e infraestrutura existentes não foram renomeados.

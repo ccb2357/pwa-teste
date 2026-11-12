@@ -51,7 +51,7 @@ export function installationInfra(c, d) {
     '<!-- BEGIN FOUNDATION INSTALL INFRA -->',
     '## 3. Preparar serviço Node, mount, volumes e site',
     'O executor usa docker run --rm (etapas 2 e 5); não cadastrar serviço de bootstrap no Compose.',
-    'Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **' + c.APP_ENV + '** e o projeto **' + c.PROJECT_SLUG + '**. Não duplique entradas que já estejam corretas. Os valores desta entrega estão prontos para pwa-teste local; se o central usar outros nomes, caminhos ou portas, ajuste os trechos para esse ambiente antes de aplicá-los. O bootstrap atualiza este bloco ao conferir o ambiente, preservando o restante do guia.',
+    'Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **' + c.APP_ENV + '** e o projeto **' + c.PROJECT_SLUG + '**. Não duplique entradas que já estejam corretas. Os trechos abaixo refletem a configuração central e o mapeamento deste ambiente; confira-os antes de aplicar. O restante do guia usa exemplos, que devem ser adaptados ao projeto.',
     '### 3.1 Serviço Node no Compose existente',
     'Arquivo de destino: `' + d.mapping.toHost(d.internalFiles[0]) + '`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite somente após executar o bootstrap e instalar as dependências, conforme a etapa 7.',
     '```yaml\n' + node + '\n```',
