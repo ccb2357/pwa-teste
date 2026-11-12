@@ -34,7 +34,7 @@ Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o a
 
 ### 3.1 Serviço Node no Compose existente
 
-Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite após executar o bootstrap, conforme a etapa 7.
+Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite somente após executar o bootstrap e instalar as dependências, conforme a etapa 7.
 
 ```yaml
 services:

@@ -1117,3 +1117,17 @@ Registrar procedimentos concretos em instalacao-pwa-framework.md antes da primei
 - Validar configuração/logs sem segredos e fila/Cron ativa. Na publicação, reiniciar worker quando aplicável; job enfileirado não comprova processamento/envio.
 
 Sprints constroem a fundação; seção 0 rege clones. Aplicar convenções e registrar evidências por etapa. Publicação, aparelhos e entrega push real continuam pendentes até validação no ambiente correspondente.
+
+<!-- BEGIN FOUNDATION IDENTITY -->
+| Campo | Valor |
+| --- | --- |
+| Projeto | PWA Framework |
+| Slug | pwa-teste |
+| Ambiente | local |
+| URL | http://pwa-teste.localhost |
+| Dev / preview | 5176 / 5177 |
+| Serviço / Compose | pwa-teste-node / infra |
+| Volumes | pwa_teste_vendor, pwa_teste_node_modules |
+| Bancos | pwa_teste, pwa_teste_test |
+| Fundação | 0.2.0-sprint.2 |
+<!-- END FOUNDATION IDENTITY -->
