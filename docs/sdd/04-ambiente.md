@@ -129,6 +129,23 @@ Os subprocessos dos testes de orquestração preservam FOUNDATION_RUNTIME_PACKAG
 
 Node 22 (>=22.12 <23), Vite 8.3.4, plugin-vue 6.0.11, Vue 3.5.45, framework7/framework7-vue 9.2.0, framework7-icons 5.0.5, lucide 1.72.0, IMask 7.6.1 e JustValidate 4.3.0. Engines/peers conferidos no registry dos pacotes. CSS exportado por framework7/css/bundle, sem sufixo .css nessa versão; ler exports da versão fixada. Sem dependência de biblioteca adicional de estilos.
 
-frontend/.foundation.public.json é gerado por ambiente e ignorado no Git. O Vite exige esse arquivo, gera título/locale e proxy API/Sanctum/up → Nginx com Host do domínio central. Servidor interno 5173, strictPort, host true, polling 300ms; publicação no host usa DEV_PORT (5176). frontend/vite.cmd resolve Compose/serviço/caminhos reais. Nenhuma alteração do site Nginx para dist antes da Sprint 4. Build disponível para checagem da compilação; não prova PWA instalada.
+frontend/.foundation.public.json é gerado por ambiente e ignorado no Git. O Vite exige esse arquivo, gera título/locale e proxy API/Sanctum/up → Nginx com Host do domínio central. Servidor interno 5173, strictPort, host true, polling 300ms; publicação no host usa DEV_PORT (5176). frontend/vite.cmd resolve Compose/serviço/caminhos reais. Site Nginx serve frontend/dist e encaminha rotas técnicas para Laravel. Build verificado não prova instalação em aparelho.
 
-Estado frontend-ready significa backend verificado e dependências npm preparadas; ainda exige iniciar Vite e validar Hello no Windows. Comandos no guia da raiz. Fila/push dependem da Sprint 5; não alterar QUEUE_CONNECTION ou gerar VAPID nesta etapa.
+Estado pwa-ready significa backend, build e HTTP no Nginx verificados; instalação/offline/atualização em navegador são aceites separados. Comandos no guia da raiz. Fila/push dependem da Sprint 5; não alterar QUEUE_CONNECTION ou gerar VAPID nesta etapa.
+
+
+## Build e PWA
+
+Dependências fixadas: vite-plugin-pwa 2.0.0 (peer compatível com Vite 8), workbox-core/precaching/routing/strategies/window 7.4.1; Node 22. O plugin 1.2.0 não declara suporte ao Vite 8 e não foi utilizado. Fonte única src/sw.js, injectManifest e registro virtual:pwa-register; sem SW em dev. Não habilitar skipWaiting automático ou autoUpdate.
+
+Configuração pública inclui shortName/description/backgroundColor por whitelist. Vite exige configuração atual; bootstrap a regenera antes de conferir infraestrutura. Entrada index.html é absoluta, resolvida de import.meta.url; sem depender do cwd ou nome da pasta frontend. Identificador de build usa hash de fontes/estáticos/scripts/lock/configuração pública, sem credenciais ou horário variável.
+
+npm run build usa .dist-build, verifica HTML/manifest/ícones/SW/precache/entrada e publica em dist. Assets/fontes/ícones são copiados antes de offline/manifest/HTML/worker, arquivos substituídos por rename individual, worker por último. Mantém assets versionados anteriores; não é uma transação de todo o diretório ou rollback de banco. Falha de compilação/validação não troca HTML servido. Falha de I/O na publicação exige corrigir e repetir; não anunciar deploy atômico integral. Build não instala npm automaticamente.
+
+Ícones PNG 192/512 (manifest) e 180 (Apple) são provisórios, texto PWA e fundo azul; identidade final depende de aprovação. Não são automaticamente redesenhados pelo central. Manifest id/start_url/scope raiz, standalone, nome/cores/locale públicos. Produto em subdiretório exige nova integração; esta base publica na raiz de sua origem.
+
+Nginx: root frontend/dist; /api, /sanctum, /up e /status reescrevem internamente para backend/public/index.php, sem fallback SPA. PHP direto externo bloqueado; dotfiles negados. HTML/manifest/worker sem immutable; /assets com hashes e cache longo; arquivo de asset ausente retorna 404. verify-http.php confere backend/CSRF; verify-pwa.php valida build servido, manifest/SW/offline, cabeçalhos e 404 técnico sem HTML SPA. Produção usa URL HTTPS pública e certificado validado. Configurações reais devem ser enviadas pelo responsável antes da análise/aplicação compartilhada.
+
+Bootstrap retorna 2 se o site anterior não corresponder ao bloco PWA. Não aplica infraestrutura automaticamente. Após aplicação manual, instala npm pelo lock, compila e valida artefatos/HTTP; falha interrompe e não marca pwa-ready. Não gera usuário, VAPID ou fila push. Executor continua temporário por docker run --rm, sem rebuild da sua imagem para atualizar scripts montados.
+
+Prévia opcional: Vite preview em 4173 interno, publicação explícita PREVIEW_PORT (exemplo 5177), sem --service-ports. Proxy técnico usa o Nginx/Host configurados. USB ADB encaminha a porta do Windows; não comprova HTTP. Nginx sem Vite é obrigatório no aceite; prévia não substitui produção. HTTPS fora de localhost; instalação e suporte variam por navegador/aparelho.

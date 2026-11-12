@@ -14,3 +14,9 @@
 12. Não anunciar instalação, build, aparelho, HTTPS ou aceite sem evidência. Referências declaradas não comprovam mounts nem contêineres ativos.
 
 13. Não manter a pasta docs/referencias/infra nem cópias dos arquivos da infraestrutura compartilhada dentro do projeto, mesmo sanitizadas. Ao iniciar ou retomar análise/alteração de infraestrutura, solicitar ao responsável os arquivos atuais necessários (Compose, Dockerfile PHP-FPM, Nginx e php.ini), com segredos removidos. O SDD e MEMORY registram contratos e evidências históricas, não substituem esses arquivos atuais. Arquivos atuais já enviados na mesma sessão podem ser reutilizados enquanto não houver indicação de mudança. Os blocos de integração próprios da aplicação continuam centralizados em instalacao-pwa-framework.md.
+
+14. Ações usam f7-button type=button (submit só quando necessário); links de navegação preservam o roteador. Associar rótulos/erros aos inputs e manter foco visível, semântica disabled/loading e teclado. Layouts reutilizam app-content e classes/tokens compartilhados. Novos valores e exceções exigem uso real, documentação no design system e aprovação quando mudarem o visual global.
+
+Regra visual aprovada: inputs, selects e textareas sem outline retangular de foco. Usar a regra global de app.css e o estado próprio do Framework7; não reintroduzir anéis/contornos nesses campos em CSS local ou compartilhado.
+
+15. PWA usa injectManifest/worker único e atualização prompt. Cache somente público; APIs/sessão/CSRF/diagnóstico nunca recebem fallback HTML/offline. Formulário alterado bloqueia recarga externa; atualização confirmada preserva campos ou mantém a aba em falha. Instalação só por ação explícita/menu. Validar build antes de publicar e assets antes do HTML/worker.

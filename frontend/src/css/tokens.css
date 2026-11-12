@@ -16,5 +16,21 @@
   --app-space-5: 32px;
   --app-content-max: 960px;
   --app-icon-size: 24px;
+  --app-icon-label-min: 100px;
+  --app-heading-line-height: 1.2;
+  --app-font-weight-strong: 700;
+  --app-focus-width: 2px;
+  --app-focus-offset: 2px;
   --f7-grid-gap: var(--app-space-3);
+}
+
+/* Resolve semantic aliases at their theme/surface, including local dark surfaces. */
+:root, .ios, .md, .dark, .page, .popup, .sheet-modal, .dialog, .toast, .notification {
+  --app-text-muted: var(--f7-list-item-subtitle-text-color);
+  --app-text-small: var(--f7-block-footer-font-size);
+  --app-color-success: var(--f7-color-green);
+  --app-color-error: var(--f7-input-error-text-color);
+  --app-surface-background: var(--f7-list-bg-color);
+  --app-surface-radius: var(--f7-block-inset-border-radius);
+  --app-focus-color: var(--f7-theme-color);
 }

@@ -1,26 +1,39 @@
 /* Layout only; Framework7 owns the controls, semantic colors and states. */
-.page[data-name="hello"] .page-content { padding-bottom: calc(96px + var(--f7-safe-area-bottom)); }
-.demo-content { max-width: var(--app-content-max); margin-inline: auto; }
-.page-heading { font-size: var(--f7-block-title-large-font-size); line-height: 1.2; margin: 0 0 var(--app-space-2); }
-.demo-actions { display: flex; gap: var(--app-space-2); flex-wrap: wrap; }
-.demo-actions .button { margin: 0; }
-.demo-note { color: var(--f7-list-item-subtitle-text-color); font-size: var(--f7-block-footer-font-size); }
-.status-heading { display: flex; justify-content: space-between; align-items: center; gap: var(--app-space-3); }
+.page[data-name="hello"] .page-content { padding-bottom: calc(var(--f7-fab-size) + var(--f7-fab-margin) + var(--app-space-4) + var(--f7-safe-area-bottom)); }
+.app-content { width: 100%; max-width: var(--app-content-max); min-width: 0; margin-inline: auto; overflow-wrap: anywhere; }
+.app-heading { font-size: var(--f7-block-title-large-font-size); line-height: var(--app-heading-line-height); margin: 0 0 var(--app-space-2); }
+.app-actions { display: flex; gap: var(--app-space-2); flex-wrap: wrap; }
+.app-actions .button { margin: 0; }
+.app-note { color: var(--app-text-muted); font-size: var(--app-text-small); }
+.status-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--app-space-3); }
 .status-heading h2 { font-size: inherit; margin: 0; }
-.status-value { font-weight: 700; }
-.status-good { color: var(--f7-color-green); }
-.status-error { color: var(--f7-color-red); }
+.status-value { font-weight: var(--app-font-weight-strong); }
+.status-good { color: var(--app-color-success); }
+.status-error { color: var(--app-color-error); }
 .status-details { display: flex; gap: var(--app-space-4); flex-wrap: wrap; margin-block: var(--app-space-3); }
-.icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: var(--app-space-3); }
-.icon-example { display: flex; align-items: center; gap: var(--app-space-2); font-size: var(--f7-block-footer-font-size); }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--app-icon-label-min)), 1fr)); gap: var(--app-space-3); }
+.icon-example { display: flex; align-items: center; gap: var(--app-space-2); font-size: var(--app-text-small); }
 .lucide-host { width: var(--app-icon-size); height: var(--app-icon-size); display: inline-flex; flex-shrink: 0; }
-.demo-checkbox { display: flex; align-items: center; gap: var(--app-space-2); }
-.demo-grid-cell { padding: var(--app-space-3); border-radius: var(--f7-block-inset-border-radius); background: var(--f7-list-bg-color); }
-.just-validate-error-field { color: var(--f7-input-error-text-color); }
-.just-validate-error-label { color: var(--f7-input-error-text-color); font-size: var(--f7-input-error-font-size); margin-block: var(--app-space-1); }
+.app-choice { display: flex; align-items: center; gap: var(--app-space-2); }
+.app-grid-cell { padding: var(--app-space-3); border-radius: var(--app-surface-radius); background: var(--app-surface-background); }
+.just-validate-error-field { color: var(--app-color-error); }
+.just-validate-error-label { color: var(--app-color-error); font-size: var(--f7-input-error-font-size); margin-block: var(--app-space-1); }
 @media (prefers-reduced-motion: reduce) {
   .router-transition-f7-cover-v-forward .page, .router-transition-f7-cover-v-backward .page,
   .router-transition-f7-dive-forward .page, .router-transition-f7-dive-backward .page,
   .router-transition-f7-fade-forward .page, .router-transition-f7-fade-backward .page,
   .router-transition-f7-parallax-forward .page, .router-transition-f7-parallax-backward .page { animation-duration: 0.01ms !important; }
+  .fab > a .icon, .fab .fab-buttons a { transition-duration: 0.01ms !important; }
+}
+
+/* Complement native states only for keyboard navigation; no replacement controls. */
+:where(.page, .popup, .sheet-modal, .dialog, .notification, .toast) :is(a[href], button, [tabindex]):not(input, select, textarea):focus-visible {
+  outline: var(--app-focus-width) solid var(--app-focus-color, Highlight);
+  outline-offset: var(--app-focus-offset);
+}
+/* Approved global rule: fields use Framework7 focus styling, never a rectangle. */
+:is(input, select, textarea):is(:focus, :focus-visible) { outline: none !important; }
+.app-choice:has(input:focus-visible) { outline: var(--app-focus-width) solid var(--app-focus-color, Highlight); outline-offset: var(--app-focus-offset); }
+@media (forced-colors: active) {
+  :focus-visible, .app-choice:has(input:focus-visible) { outline-color: Highlight; }
 }

@@ -1,14 +1,16 @@
 <template>
-  <f7-block strong inset data-testid="backend-status" aria-live="polite" aria-atomic="true">
+  <f7-block strong inset data-testid="backend-status" :aria-busy="state === 'loading'">
     <div class="status-heading">
       <h2>Laravel e MySQL</h2>
-      <f7-button small outline :disabled="state === 'loading'" @click="refresh">Atualizar status</f7-button>
+      <f7-button type="button" small outline preloader :loading="state === 'loading'" :disabled="state === 'loading'" :aria-disabled="state === 'loading'" :tabindex="state === 'loading' ? -1 : 0" @click="refresh">Atualizar status</f7-button>
     </div>
-    <div class="status-details">
-      <span>Backend: <strong :class="statusClass">{{ statusText }}</strong></span>
-      <span>Banco: <strong :class="statusClass">{{ statusText }}</strong></span>
+    <div role="status" aria-live="polite" aria-atomic="true">
+      <div class="status-details">
+        <span>Backend: <strong class="status-value" :class="statusClass">{{ statusText }}</strong></span>
+        <span>Banco: <strong class="status-value" :class="statusClass">{{ statusText }}</strong></span>
+      </div>
+      <p class="app-note">{{ message }}</p>
     </div>
-    <p class="demo-note">{{ message }}</p>
   </f7-block>
 </template>
 <script setup>
@@ -21,6 +23,7 @@ let sequence = 0;
 const statusText = computed(() => ({ idle: 'Não verificado', loading: 'Verificando…', ok: 'OK', offline: 'Não verificado', unavailable: 'Indisponível', error: 'Não verificado' })[state.value]);
 const statusClass = computed(() => state.value === 'ok' ? 'status-good' : ['error', 'unavailable'].includes(state.value) ? 'status-error' : '');
 async function refresh() {
+  if (state.value === 'loading') return;
   controller?.abort();
   const current = ++sequence;
   if (!navigator.onLine) { state.value = 'offline'; message.value = 'Sem conexão. O banco não foi verificado.'; return; }

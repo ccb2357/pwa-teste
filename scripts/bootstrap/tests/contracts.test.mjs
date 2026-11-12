@@ -139,3 +139,13 @@ test('public config excludes credentials and keeps proxy details out of the brow
   assert.equal(output.app.locale, 'pt-BR');
   assert.equal(output.app.proxyTarget, undefined);
 });
+
+test('PWA Nginx separates backend routes, mutable entrypoints and immutable assets', () => {
+  const site = nginxSnippet(config());
+  assert.match(site, /root "\/var\/www\/pwa-teste\/frontend\/dist"/);
+  assert.match(site, /api\|sanctum\|up\|status/);
+  assert.match(site, /internal;/); assert.match(site, /SCRIPT_FILENAME "\/var\/www\/pwa-teste\/backend\/public\/index.php"/);
+  assert.match(site, /location = \/sw.js[^}]+no-cache/);
+  assert.match(site, /location \/assets\/[^}]+immutable/);
+  assert.doesNotMatch(site, /return 302 \/status/);
+});

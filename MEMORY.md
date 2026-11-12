@@ -2,9 +2,9 @@
 
 ## Objetivo e estado vigente — 2026-11-12
 
-Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. **Sprint 1 validada no Windows/Docker do responsável. Sprint 2 instalada com aparência aprovada pelo responsável; ajuste do FAB entregue para nova conferência.** Backend preservado; frontend Framework7 Vue, Hello, grid/CSS nativos, Nunito local e integrações npm/configuração pública disponíveis. Sem outra biblioteca de estilos. Não declarar aceite visual, HMR no Windows ou integração frontend/MySQL local do responsável sem sua confirmação.
+Construir PWA Framework conforme README. Checkout de referência pwa-teste; manual usa meu-projeto como exemplo. **Sprint 4 encerrada com aceite local do responsável.** Bootstrap/build/HTTP passaram no Windows/Docker; atualização real no Chrome Android preservou os campos, inclusive com duas abas. O aceite é do ambiente local testado, sem extrapolar para produção, HTTPS público, iPhone ou outros navegadores.
 
-Próximo passo concreto: Sprint 3, após solicitação do responsável. Execução direta do executor no Windows confirmada com código 0; não repetir a migração nem renomear o projeto existente por causa dos exemplos do manual. PWA/worker na Sprint 4, push na 5, fechamento na 6.
+Próxima construção: Sprint 5 — Push Notifications, após autorização do responsável. Reutilizar worker/registration, fluxo de atualização e isolamento da API existentes. Não repetir instalação nem os testes já aceitos sem mudança que justifique. Sprint 6 continua responsável pelo fechamento e evidências adicionais previstas. O manual de instalação já contém os procedimentos necessários e não recebe histórico de testes.
 
 ## Entregue
 
@@ -13,7 +13,7 @@ Próximo passo concreto: Sprint 3, após solicitação do responsável. Execuç�
 - app:sync, diagnóstico HTML/JSON com consulta real, no-store, 503 e rotas independentes de sessão; Sanctum/CSRF preparado, sem login.
 - Bootstrap ES modules executável: validação central, identificação/mapeamento Compose, geração manual de infra, verificação de portas, env/APP_KEY, permissões, bancos com conta existente, Composer idempotente e app:sync. Migrations de produção exigem --force; sem env testing gerado em produção.
 - Dockerfile/entrypoint/dependências isoladas do executor; imagem pwa-foundation-bootstrap:0.1.0 por docker build/docker run --rm, sem serviço próprio no Compose. Docker CLI 28.5.1 e Compose 2.40.3 copiados da imagem docker:28.5.1-cli. Host do usuário usa Compose 5.1.3, que não foi substituído.
-- Frontend Framework7 Vue/Hello, manifests e lockfile npm, configuração pública e frontend/vite.cmd para dev/build entregues na Sprint 2; validação local pendente.
+- Frontend Framework7 Vue/Hello, manifests e lockfile npm, configuração pública e frontend/vite.cmd para dev/build entregues na Sprint 2; base utilizada nos testes locais aceitos da Sprint 4.
 - Blocos Compose/Nginx em instalacao-pwa-framework.md, regenerados após preencher o central. Não usar como novo Compose/override nem substituir os mounts existentes.
 - SDD, regras, metadados e testes cumulativos. Segredos recebidos não foram reutilizados ou incluídos.
 
@@ -38,7 +38,7 @@ Próximo passo concreto: Sprint 3, após solicitação do responsável. Execuç�
 
 ## Pendências das próximas etapas
 
-1. Validar a Sprint 2 no Windows/Docker do responsável. Depois: design system na Sprint 3, integração PWA na 4 e push na 5.
+1. Implementar push na Sprint 5 quando autorizado; fechar os aceites restantes na Sprint 6. Sprint 4 aceita localmente pelo responsável.
 2. Docker/Linux e VPS reais, TLS/certificado, backups/restore, dois clones simultâneos, aparelhos e falhas parciais reais. Simulações dos testes Node não substituem essas evidências.
 3. Definir ferramentas de formatação/lint JS/CSS antes de novas dependências; nesta etapa JS usa check sintático e testes nativos Node, PHP usa Pint. Não adicionar bibliotecas silenciosamente.
 
@@ -175,3 +175,46 @@ Após o responsável colar as continuações e echo juntos, o bootstrap rejeitou
 ## Manual independente da pasta do projeto — 2026-11-12
 
 O responsável confirmou docker run real no Windows com saída 0, backend verificado e dependências preservadas. Migração do executor fora do Compose validada nesse ambiente. Por solicitação posterior, o manual usa meu-projeto/meu_projeto como exemplos em pastas, comandos, domínios, serviços e volumes; nomes/caminhos/portas/rede devem seguir o central e a infraestrutura real. Gerador não contém mais a suposição pwa-teste local: seu bloco gerenciado continua refletindo o alvo real descoberto, preservando os exemplos externos. Projeto, central e infraestrutura existentes não foram renomeados.
+
+
+## Sprint 3 — design system e consistência — 2026-11-12
+
+- Consolidado tokens.css com fonte/espaçamento existentes, dimensões de ícones/conteúdo/título, semântica vinculada ao Framework7 e foco visível. app.css fornece app-content/app-heading/app-note/app-actions/app-choice/app-grid-cell para Hello, auxiliar e composições; largura máxima compartilhada, quebra do status/textos e reserva do FAB baseada em métricas nativas/safe-area. Bordas/sombras/temas permanecem do framework; sem outra biblioteca ou nova identidade visual.
+- Ações usam f7-button type=button, mantendo submit e retorno back oficiais. Código instalado do Framework7 Vue 9.2.0 mostra disabled como classe CSS: complementado aria-disabled/tabindex e guarda de reentrada no status, com preloader oficial/aria-busy/região de resultado.
+- Labels visuais de f7-list-input são divs nessa versão: usado slot label oficial com label/for real nos quatro campos. JustValidate onValidate associa erro visível por aria-describedby e aria-invalid, limpa vínculos obsoletos e restaura atributos no destroy; máscara/v-model preservados.
+- FAB continua Speed Dial oficial de três ações. Slot root documentado permite nome/estado no acionador real, estrutura Core preservada, Espaço/Escape, foco devolvido ao fechar e ações fechadas inert/fora do Tab. Ícones Lucide seguem tamanho do token, sem medidas duplicadas no JS. Movimento reduzido inclui a expansão do FAB.
+- Documentação: 02-design-system descreve tokens/classes/estados/limites; telas, AGENTS/RULES e guia alinhados. Manual mantém exemplos genéricos e comandos em linha única. README continua especificação sem conclusão de sprints; contrato FAB reconciliado. foundation.json e estado gerado identificam 0.3.0-sprint.3, com aceite visual pendente explícito.
+- Verificação: build Vite com Node 22.23.4 passou; mantém aviso de chunk acima de 500 kB do bundle oficial F7. 31 testes Node passaram (27 bootstrap/orquestração, 4 API). DOM simulado executou o bundle real: botões/disabled/loading, labels/required, erros/foco/correção ARIA, máscara, 20 SVG, FAB Espaço/Escape/foco/inert, quatro rotas/retorno e descarte do OK em indisponibilidade/offline passaram, sem erros JavaScript observados. API nessa checagem é simulada. jsdom foi instalado só em diretório temporário, sem nova dependência do projeto.
+- Chromium não iniciou no ambiente do agente; não há validação visual, screenshot, contraste medido, leitor de tela, Tab/Enter nativos ou HMR/Docker Windows novos. Larguras/temas/redução de movimento e apresentação de foco/recortes precisam do aceite real. Sem novas telas, PWA, worker, push ou alteração da infraestrutura.
+
+
+## Campos sem contorno retangular — 2026-11-12
+
+Responsável rejeitou o outline retangular visível no campo E-mail após validação. Removidos campos do seletor de anel compartilhado e adicionada regra global input/select/textarea :focus/:focus-visible com outline none. Estilo próprio do Framework7 e foco funcional da validação preservados. Design system, AGENTS e RULES proíbem reintroduzir o contorno nos campos. Correção CSS; sem mudança de dependências.
+
+
+## Sprint 4 — PWA/build/publicação — 2026-11-12
+
+- Fixados vite-plugin-pwa 2.0.0 (peer declara Vite 8) e Workbox 7.4.1; sem trocar Vite/Vue/F7. Plugin 1.2.0 foi descartado na conferência por não declarar suporte ao Vite 8. npm ci pelo lockfile em Node 22.23.4 passou; sem instalação de runtime no Windows do responsável.
+- Worker único src/sw.js via injectManifest/self.__WB_MANIFEST, virtual:pwa-register/prompt e onNeedReload explícito. Sem registro em dev. Precache contém apenas HTML/shell/offline, bundles/fontes, ícones e manifest públicos; NetworkOnly para o restante. Rotas técnicas, variantes codificadas/dotfiles/PHP fora dos fallbacks. Sem cache de API/CSRF/sessão/diagnóstico, push, nova fila ou usuário.
+- PwaStatus na Hello: conexão, offline preparado, instalação explícita ou orientação de menu/iPhone, versão, verificação/atualização com confirmação. Rascunho dos campos conhecidos por aba/slug em sessionStorage, consumido uma vez/24h; falha de storage ou preservação integral bloqueia recarga. Ativação em outra aba mantém a aba alterada; ativação aprovada captura novamente antes de recarregar. Não é persistência de registros nem integração automática de formulários futuros.
+- Manifest deriva da whitelist central; ícones PNG provisórios 192/512 e Apple 180, sem identidade visual final. Entrada index.html absoluta baseada em import.meta.url. Build id por hash público/fontes/lock/scripts. check:pwa valida arquivos/entrada/ícones/precache; scripts de publicação verificam staging e copiam assets antes de HTML/worker, mantendo assets antigos. Não prometer transação integral ou limpar assets antigos sem política.
+- Bootstrap 0.4.0-sprint.4: mantém executor temporário fora do Compose, instala npm pelo lock, builda e verifica artefatos/HTTP. Código 2 aguarda alteração manual do site, sem criar segunda pilha. pwa-ready exige backend e HTTP PWA; não atesta comportamento do navegador. Novo verify-pwa.php tem somente diagnósticos controlados. Nginx gerado usa dist, separa rotas Laravel internas, controla cache e 404 de assets. Infraestrutura real não foi alterada pelo agente.
+- Evidências: npm ci e build reais no runtime Linux do agente; 40 testes Node passaram (contratos/orquestração do bootstrap, cliente API e lógica PWA). Build/check em pasta chamada application, fora de frontend e com cwd externo, passou com o mesmo identificador da cópia de referência. Sintaxe PHP aprovada. Verificador PHP/cURL executado contra servidor temporário com arquivos reais do build: sucesso correto e rejeições de cache incorreto, worker HTML e rota API HTML. Esse servidor não é Nginx/PHP-FPM/MySQL do responsável.
+- Build mantém aviso >500 kB do bundle oficial F7; SW compilado ~17 kB. Sem captura ou execução real de SW/instalação em Chromium/aparelho: ambiente de navegador do agente já apresentou restrição de inicialização. Testes do manager usam callbacks/ambiente simulados; não comprovam evento real entre abas, menu de instalação, offline nem TLS. Alpine/Docker Desktop, Nginx real, ADB/iPhone/Android, duas versões reais e produção permanecem no aceite. Vitest/Playwright completos continuam para a consolidação final prevista, sem dependências silenciosas adicionadas nesta sprint.
+- Guia da raiz conserva exemplos genéricos e comandos em uma linha, com Nginx/build, prévia única 5177→4173, USB ADB e roteiro de atualização. SDD, regras e metadados reconciliados; arquivos privados, vendor/node_modules, dist e staging fora do pacote. Backend de negócio e dependências PHP preservados.
+
+
+## Infraestrutura atual recebida para Sprint 4 — 2026-11-12
+
+Recebidos Compose e sites_local.conf atuais. Confirmados bind compartilhado no PHP/Nginx, vendor/modules nomeados, serviço Node 22/perfil dev/porta 5176 e rede infra_network; não há necessidade de alterar Compose ou recriar PHP. Site pwa-teste ainda apontava para backend/public com redirecionamento /status. Preparado sites_local.conf completo fora do projeto, substituindo exclusivamente esse bloco pelo template PWA vigente; bytes dos demais sites preservados. Aplicação e nginx -t/reload reais ficam com o responsável, seguidos do bootstrap/build/HTTP. Nenhum arquivo de infraestrutura ou credencial foi arquivado no projeto.
+
+
+## Aceite local da Sprint 4 — 2026-11-12
+
+- Responsável enviou saída real do bootstrap no Windows/Docker: dependências PHP preservadas, npm instalado pelo lock, build PWA e HTTP via Nginx concluídos; build 0.4.0-def6b174a174. Não foi necessária reconstrução do executor nem mudança do Compose.
+- Chrome Android via USB/ADB, origem localhost:5177: inicialmente aparecia a antiga tela Demonstração. Captura no PC mostrou a Hello atual; o responsável clicou Atualizar aplicativo no celular e confirmou a troca para a versão atual. Registro de versão antiga no navegador não foi tratado como ausência da seção no código entregue.
+- Teste real entre builds: após preencher campos na Hello e publicar outra versão, confirmou atualização pelo botão com todos os campos preservados.
+- Teste real com duas abas: informou sucesso do roteiro completo, com campos diferentes por aba; a segunda manteve os campos sem recarga automática e os preservou ao confirmar sua própria atualização.
+- Após os testes, o responsável confirmou encerramento da Sprint 4. As confirmações de atualização/campos/abas foram textuais; não foram inventados logs adicionais, valores preenchidos ou testes independentes do agente. Não há nesta conversa comprovação específica de instalação na tela inicial da Hello atual nem homologação de iPhone/produção/HTTPS público; não generalizar o aceite local para esses ambientes.
+- Não acrescentar esse histórico ao instalacao-pwa-framework.md: o roteiro do zero e os testes operacionais necessários já estão lá. Esta atualização altera somente MEMORY.md; nenhum comando ou reinstalação é necessário. Próxima sprint: Push Notifications (Sprint 5).

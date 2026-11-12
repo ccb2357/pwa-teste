@@ -29,3 +29,6 @@ Thumbs.db
 
 # Saída pública derivada do central por ambiente
 frontend/.foundation.public.json
+
+frontend/.dist-build/
+**/*.publishing

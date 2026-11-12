@@ -25,3 +25,6 @@ Os diagnósticos usam respostas diretas sem resolver o factory de resposta/Redir
 ## Cliente frontend
 
 services/api.js envia credentials include e cache no-store, exige JSON e não converte erro/503 em sucesso. Mutações futuras obtêm /sanctum/csrf-cookie e enviam X-XSRF-TOKEN decodificado do cookie; sem token, bloqueiam envio. Não repetir POST automaticamente após 419. Status atual usa apenas GET /api/v1/status. Hello não grava informações; APIs push são escopo futuro da Sprint 5.
+
+
+PWA: o service worker não armazena respostas destas APIs, sessão, CSRF, /up ou /status. Nenhuma rota de dados pode receber HTML do shell como resposta offline. Vite dev/prévia usam proxy técnico; no build Nginx encaminha as rotas ao mesmo Laravel. Instalação e atualização não criam endpoints ou usuários; Web Push continua pendente.

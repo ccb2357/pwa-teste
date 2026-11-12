@@ -4,7 +4,7 @@ import { args, load, schema } from './lib/config.mjs';
 import { FoundationError, requireThat, httpFailure } from './lib/errors.mjs';
 import { docker, jsonOutput } from './lib/process.mjs';
 import { discover, infraProblems, phpExec, checkPorts } from './lib/docker.mjs';
-import { installFrontend } from './lib/frontend.mjs';
+import { installFrontend, buildFrontend } from './lib/frontend.mjs';
 import { generate, siteApplied } from './lib/templates.mjs';
 import { identity, checkIdentity, hash, readOptional, writeAtomic, synchronizeEnvs } from './lib/files.mjs';
 let lock, stateFile, state;
@@ -18,7 +18,7 @@ try {
   const saved = await readOptional(stateFile, '{}');
   try { state = JSON.parse(saved); } catch { throw new FoundationError('Estado local inválido. Preserve-o para diagnóstico; não reinicialize identidade automaticamente.'); }
   checkIdentity(state, c);
-  state = { ...state, schema, identity: identity(c), release: '0.2.0-sprint.2', completeFoundation: false, startedAt: new Date().toISOString() };
+  state = { ...state, schema, identity: identity(c), release: '0.4.0-sprint.4', completeFoundation: false, startedAt: new Date().toISOString() };
   console.log(`Preparação de ${c.PROJECT_SLUG} (${c.APP_ENV}).`);
   const d = await discover(c);
   if (state.composeProject) requireThat(state.composeProject === d.project, 'Identidade da infraestrutura Compose mudou; revisar explicitamente.');
@@ -73,11 +73,18 @@ try {
   state.phase = 'frontend-install'; await save();
   const frontendLock = await installFrontend(c, d);
   state.frontendLock = frontendLock;
-  state.phase = 'frontend-ready'; state.lastExitCode = 0; state.phpVersion = version; state.composerLock = hash(lockfile); state.verifiedAt = new Date().toISOString(); state.checks = evidence.checks;
-  state.pending = ['Design system (Sprint 3)', 'PWA/build/publicação (Sprint 4)', 'Push Notifications (Sprint 5)', 'Validações finais (Sprint 6)']; await save();
-  console.log(`Sprint 2: backend verificado e dependências frontend preparadas. Status: ${c.appUrl}/status.`);
-  console.log(c.APP_ENV === 'local' ? `Para abrir Hello, execute frontend/vite.cmd dev e acesse http://localhost:${c.DEV_PORT}.` : 'Frontend preparado; publicação PWA pertence à Sprint 4.');
-  console.log('PWA, push, aparelhos e aceite final continuam nas próximas etapas.');
+  state.phase = 'frontend-build'; await save();
+  const build = await buildFrontend(c, d);
+  const verifyPwa = await docker(['exec', '-i', '--workdir', c.backend, d.php.Id, 'php', path.join(c.root, 'scripts/bootstrap/php/verify-pwa.php')], {
+    input: JSON.stringify({ url: c.appUrl, target: c.NGINX_INTERNAL_URL, environment: c.APP_ENV, name: c.PROJECT_NAME, buildId: build.buildId, asset: build.entry }), label: 'HTTP PWA', allowFailure: true,
+  });
+  const pwaEvidence = jsonOutput(verifyPwa, 'HTTP PWA');
+  const reasons = ['http', 'html', 'cache', 'manifest', 'worker', 'offline', 'asset-path', 'asset-cache', 'api-route'];
+  requireThat(verifyPwa.code === 0 && pwaEvidence.status === 'ok', 'PWA HTTP: ' + (reasons.includes(pwaEvidence.reason) ? pwaEvidence.reason : 'verificação falhou') + '. Confira build/Nginx no guia.');
+  state.phase = 'pwa-ready'; state.lastExitCode = 0; state.phpVersion = version; state.composerLock = hash(lockfile); state.frontendBuild = build.buildId; state.verifiedAt = new Date().toISOString(); state.checks = { ...evidence.checks, pwa: pwaEvidence.checks };
+  state.pending = ['Instalação/offline/atualização em navegador/aparelhos reais', 'Push Notifications (Sprint 5)', 'Validações finais (Sprint 6)']; await save();
+  console.log(`Backend e build PWA verificados via Nginx. Abra ${c.appUrl}. Build: ${build.buildId}.`);
+  console.log('Código 0 não atesta instalação, offline ou atualização em aparelhos. Push e aceite final continuam pendentes.');
 } catch (error) {
   if (state) { state.phase = error.code === 2 ? 'manual-pending' : 'failed'; state.lastExitCode = error.code === 2 ? 2 : 1; await save().catch(() => {}); }
   console.error(error instanceof FoundationError ? error.message : 'Bootstrap interrompido. Confira configuração, caminhos e acesso aos arquivos; detalhes privados não são exibidos.');

@@ -11,7 +11,7 @@ const entry = fileURLToPath(new URL('../index.mjs', import.meta.url));
 const runtime = process.env.FOUNDATION_RUNTIME_PACKAGE || fileURLToPath(new URL('../executor/package.json', import.meta.url));
 const example = parseCentral(await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8'));
 // Deterministic Engine/Compose simulation; never connects to or mutates a real Docker Engine.
-async function fixture({ pending = false, production = false, desktop = false, httpFailure = false, npmFailure = false } = {}) {
+async function fixture({ pending = false, production = false, desktop = false, httpFailure = false, npmFailure = false, buildFailure = false, pwaFailure = false } = {}) {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-flow-'));
   const projects = tmp + '/projects', root = projects + '/product-a';
   await fs.mkdir(root + '/backend', { recursive: true }); await fs.mkdir(root + '/frontend'); await fs.mkdir(projects + '/infra'); await fs.mkdir(tmp + '/bin');
@@ -29,7 +29,7 @@ async function fixture({ pending = false, production = false, desktop = false, h
   const php = { Id: 'php-id', Config: { Labels: labels('php-fpm') }, State: { Running: true }, Mounts: [...mounts, ...(!pending ? [{ Type: 'volume', Name: c.vendorVolume, Destination: c.backend + '/vendor' }] : [])], NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const nginx = { Id: 'nginx-id', Config: { Labels: labels('nginx') }, State: { Running: true }, Mounts: mounts, NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const config = { services: { 'php-fpm': { volumes: [{ type: 'volume', source: c.vendorVolume, target: c.backend + '/vendor' }] }, [c.nodeService]: { image: 'node:22-alpine', working_dir: '/app', profiles: ['dev'], networks: { infra_network: {} }, volumes: [{ type: 'bind', source: '/srv/apps/product-a/frontend', target: '/app' }, { type: 'volume', source: c.modulesVolume, target: '/app/node_modules' }], ports: [{ target: 5173, published: '5176', host_ip: '127.0.0.1' }] } }, volumes: { [c.vendorVolume]: { name: c.vendorVolume }, [c.modulesVolume]: { name: c.modulesVolume } } };
-  const data = { php, nginx, config, site: pending ? '' : nginxSnippet(c), marker: '', installs: 0, syncs: 0, calls: [], httpFailure, npmMarker: '', npmInstalls: 0, npmFailure };
+  const data = { php, nginx, config, site: pending ? '' : nginxSnippet(c), marker: '', installs: 0, syncs: 0, calls: [], httpFailure, npmMarker: '', npmInstalls: 0, npmFailure, builds: 0, buildFailure, pwaFailure };
   const dataFile = tmp + '/fake-engine.json'; await fs.writeFile(dataFile, JSON.stringify(data));
   const fake = `#!${process.execPath}
 import fs from 'node:fs';
@@ -42,6 +42,8 @@ else if(a[0]==='ps')out=a.some(x=>x.includes('service=php-fpm'))?'php-id':'php-i
 else if(a[0]==='inspect')out=JSON.stringify(a.slice(1).map(x=>x==='php-id'?data.php:data.nginx));
 else if(a[0]==='run'){
  if(a.includes('ci')){data.npmInstalls++;if(data.npmFailure){process.exitCode=42;process.stderr.write('PRIVATE-NPM-OUTPUT');}}
+ else if(a.includes('build')){data.builds++;if(data.buildFailure){process.exitCode=45;process.stderr.write('PRIVATE-BUILD-OUTPUT');}}
+ else if(a.includes('scripts/check-pwa.mjs'))out=JSON.stringify({buildId:'0.4.0-fixture',entry:'assets/app-fixture.js',files:['index.html','assets/app-fixture.js']});
  else if(a.includes('-e')){const code=a[a.indexOf('-e')+1];if(code.includes('JSON.stringify'))out=JSON.stringify({marker:data.npmMarker,metadata:!!data.npmMarker});else if(code.includes('writeFileSync'))data.npmMarker=stdin().trim();}
 }
 else if(a[0]==='exec'){
@@ -52,6 +54,7 @@ else if(a[0]==='exec'){
  else if(a.includes('app:sync'))data.syncs++;
  else if(a.some(x=>x.endsWith('databases.php'))){stdin();out='{"status":"ok"}';}
  else if(a.some(x=>x.endsWith('verify-runtime.php')))stdin();
+ else if(a.some(x=>x.endsWith('verify-pwa.php'))){stdin();out=JSON.stringify({status:data.pwaFailure?'error':'ok',checks:{simulation:'ok'}});if(data.pwaFailure)process.exitCode=1;}
  else if(a.some(x=>x.endsWith('verify-http.php'))){stdin();out=data.httpFailure?JSON.stringify({status:'error',reason:'csrf-token-missing',path:'/sanctum/csrf-cookie',http_status:204,curl_errno:0,origin_index:3,body:'PRIVATE-BODY'}):'{"status":"ok","checks":{"simulation":"ok"}}';if(data.httpFailure){process.exitCode=1;process.stderr.write('PRIVATE-STDERR');}}
  else if(a.includes('-r')){
   const code=a[a.indexOf('-r')+1];
@@ -115,7 +118,7 @@ test('initialized flow preserves keys and skips unchanged dependencies on reexec
     assert.equal((guide.match(/<!-- BEGIN FOUNDATION INSTALL INFRA -->/g) || []).length, 1);
     const data = await f.data(); assert.equal(data.installs, 1); assert.equal(data.syncs, 2); assert.equal(data.npmInstalls, 1);
     assert.ok(data.calls.some(a => a[0] === 'run' && a.includes('--publish') && a.includes('infra_network')));
-    const state = JSON.parse(await fs.readFile(f.root + '/.foundation-state.json', 'utf8')); assert.equal(state.completeFoundation, false); assert.equal(state.phase, 'frontend-ready');
+    const state = JSON.parse(await fs.readFile(f.root + '/.foundation-state.json', 'utf8')); assert.equal(state.completeFoundation, false); assert.equal(state.phase, 'pwa-ready'); assert.equal(state.frontendBuild, '0.4.0-fixture'); assert.equal(data.builds, 2);
     assert.ok(!data.calls.some(a => a[0] === 'compose' && ['up', 'run', 'down'].some(x => a.includes(x))));
     assert.doesNotMatch(first.stdout + first.stderr + second.stdout + second.stderr, /fixture\$special/);
   } finally { await f.cleanup(); }
@@ -150,4 +153,12 @@ test('npm failure stops frontend completion without exposing raw output or marki
     const state = JSON.parse(await fs.readFile(f.root + '/.foundation-state.json', 'utf8'));
     assert.equal(state.phase, 'failed'); assert.notEqual(state.frontendLock, true);
   } finally { await f.cleanup(); }
+});
+
+test('failed builds or PWA HTTP checks never mark initialization complete', async () => {
+  for (const options of [{ buildFailure: true }, { pwaFailure: true }]) {
+    const f = await fixture(options);
+    try { const result = await f.invoke(); assert.equal(result.code, 1); const state = JSON.parse(await fs.readFile(f.root + '/.foundation-state.json', 'utf8')); assert.equal(state.phase, 'failed'); assert.doesNotMatch(result.stdout + result.stderr, /PRIVATE-BUILD/); }
+    finally { await f.cleanup(); }
+  }
 });

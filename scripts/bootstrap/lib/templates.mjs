@@ -8,9 +8,33 @@ export function composeSnippet(c, d) {
 }
 export function nginxSnippet(c) {
   const host = c.APP_ENV === 'production' ? new URL(c.appUrl).hostname : c.LOCAL_DOMAIN;
-  const common = `    server_name ${host};\n    root ${q(c.backend + "/public")};\n    index index.php;\n    charset utf-8;\n\n    location = / { return 302 /status; }\n    location / { try_files $uri $uri/ /index.php?$query_string; }\n    location = /index.php {\n        include fastcgi_params;\n        fastcgi_pass ${c.PHP_SERVICE}:9000;\n        fastcgi_param SCRIPT_FILENAME ${q(c.backend + "/public/index.php")};\n    }\n    location ~ \\.php$ { return 404; }\n    location ~ /\\. { deny all; }\n`;
-  if (c.APP_ENV === 'local') return `# PWA FOUNDATION: ${c.PROJECT_SLUG} — backend Sprint 1\nserver {\n    listen 80;\n${common}}\n`;
-  return `# PWA FOUNDATION: ${c.PROJECT_SLUG} — backend Sprint 1\n# Conferir caminhos reais do certificado antes de aplicar.\nserver {\n    listen 80;\n    server_name ${host};\n    location /.well-known/acme-challenge/ { root /var/www/certbot; }\n    location / { return 301 https://$host$request_uri; }\n}\nserver {\n    listen 443 ssl;\n    ssl_certificate /etc/letsencrypt/live/${host}/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/${host}/privkey.pem;\n${common}    fastcgi_param HTTPS on;\n}\n`;
+  const common = `    server_name ${host};
+    root ${q(c.frontend + '/dist')};
+    index index.html;
+    charset utf-8;
+    add_header Cache-Control "no-cache" always;
+
+    location = /sw.js { try_files $uri =404; add_header Cache-Control "no-cache" always; add_header Service-Worker-Allowed "/"; }
+    location = /manifest.webmanifest { types { application/manifest+json webmanifest; } try_files $uri =404; add_header Cache-Control "no-cache" always; }
+    location = /index.html { try_files $uri =404; add_header Cache-Control "no-cache" always; }
+    location /assets/ { try_files $uri =404; add_header Cache-Control "public, max-age=31536000, immutable"; }
+    location ~ /\\. { deny all; }
+    location ~ ^/(api|sanctum|up|status)(/|$) { rewrite ^ /index.php last; }
+    location = /index.php {
+        internal;
+        include fastcgi_params;
+        fastcgi_pass ${c.PHP_SERVICE}:9000;
+        fastcgi_param SCRIPT_FILENAME ${q(c.backend + '/public/index.php')};
+        fastcgi_param DOCUMENT_ROOT ${q(c.backend + '/public')};
+        ${c.APP_ENV === 'production' ? 'fastcgi_param HTTPS on;' : ''}
+        add_header Cache-Control "no-store" always;
+    }
+    location ~* \\.php(/|$) { return 404; }
+    location / { try_files $uri $uri/ /index.html; }
+`;
+  const marker = '# PWA FOUNDATION: ' + c.PROJECT_SLUG + ' — PWA Sprint 4\n';
+  if (c.APP_ENV === 'local') return marker + `server {\n    listen 80;\n${common}}\n`;
+  return marker + `# Conferir certificados reais antes de aplicar.\nserver {\n    listen 80;\n    server_name ${host};\n    location /.well-known/acme-challenge/ { root /var/www/certbot; }\n    location / { return 301 https://$host$request_uri; }\n}\nserver {\n    listen 443 ssl;\n    ssl_certificate /etc/letsencrypt/live/${host}/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/${host}/privkey.pem;\n${common}}\n`;
 }
 export function viteCmd(c, d) {
   const cmdPath = value => {
@@ -23,7 +47,7 @@ export function viteCmd(c, d) {
 }
 export function publicConfiguration(c) {
   return {
-    app: { name: c.PROJECT_NAME, slug: c.PROJECT_SLUG, locale: c.APP_LOCALE.replace('_', '-'), displayTimezone: c.DISPLAY_TIMEZONE, appUrl: c.appUrl, apiBase: '/api/v1', themeColor: c.PWA_THEME_COLOR },
+    app: { name: c.PROJECT_NAME, slug: c.PROJECT_SLUG, locale: c.APP_LOCALE.replace('_', '-'), displayTimezone: c.DISPLAY_TIMEZONE, appUrl: c.appUrl, apiBase: '/api/v1', themeColor: c.PWA_THEME_COLOR, shortName: c.PWA_SHORT_NAME, description: c.PWA_DESCRIPTION, backgroundColor: c.PWA_BACKGROUND_COLOR },
     vite: { proxyTarget: c.NGINX_INTERNAL_URL, proxyHost: new URL(c.appUrl).host, devPort: c.DEV_PORT, previewPort: c.PREVIEW_PORT },
   };
 }
@@ -36,7 +60,7 @@ export async function generate(c, d) {
   await writeAtomic(guidePath, guide.replace(infraBlock, () => installationInfra(c, d)));
   const file = path.join(c.frontend, 'vite.cmd');
   await writeAtomic(file, viteCmd(c, d));
-  const summary = `<!-- BEGIN FOUNDATION IDENTITY -->\n| Campo | Valor |\n| --- | --- |\n| Projeto | ${c.PROJECT_NAME.replaceAll('|', '\\|')} |\n| Slug | ${c.PROJECT_SLUG} |\n| Ambiente | ${c.APP_ENV} |\n| URL | ${c.appUrl} |\n| Dev / preview | ${c.DEV_PORT} / ${c.PREVIEW_PORT} |\n| Serviço / Compose | ${c.nodeService} / ${d.project} |\n| Volumes | ${c.vendorVolume}, ${c.modulesVolume} |\n| Bancos | ${c.DB_DATABASE}, ${c.DB_TEST_DATABASE} |\n| Fundação | 0.2.0-sprint.2 |\n<!-- END FOUNDATION IDENTITY -->`;
+  const summary = `<!-- BEGIN FOUNDATION IDENTITY -->\n| Campo | Valor |\n| --- | --- |\n| Projeto | ${c.PROJECT_NAME.replaceAll('|', '\\|')} |\n| Slug | ${c.PROJECT_SLUG} |\n| Ambiente | ${c.APP_ENV} |\n| URL | ${c.appUrl} |\n| Dev / preview | ${c.DEV_PORT} / ${c.PREVIEW_PORT} |\n| Serviço / Compose | ${c.nodeService} / ${d.project} |\n| Volumes | ${c.vendorVolume}, ${c.modulesVolume} |\n| Bancos | ${c.DB_DATABASE}, ${c.DB_TEST_DATABASE} |\n| Fundação | 0.4.0-sprint.4 |\n<!-- END FOUNDATION IDENTITY -->`;
   const readmePath = path.join(c.root, 'README.md'), readme = await readOptional(readmePath);
   const block = /<!-- BEGIN FOUNDATION IDENTITY -->[\s\S]*?<!-- END FOUNDATION IDENTITY -->/;
   await writeAtomic(readmePath, block.test(readme) ? readme.replace(block, () => summary) : readme.trimEnd() + '\n\n' + summary + '\n');
@@ -62,7 +86,7 @@ export function installationInfra(c, d) {
     'No mesmo arquivo, mesclar estas declarações no bloco `volumes` de nível raiz, no mesmo nível de `services` e `networks`. Se o bloco ainda não existir, criá-lo. O mount do passo anterior e esta declaração são necessários.',
     '```yaml\n' + volumes + '\n```',
     '### 3.4 Site Nginx',
-    'No arquivo de sites ativo do Nginx, acrescentar o bloco abaixo preservando os outros sites. Nesta infraestrutura local, o destino é `C:\\var\\www\\infra\\nginx\\sites_local.conf`. Em produção, usar o arquivo realmente montado e conferir os certificados. O root desta release é `backend/public`; não apontar para `frontend/dist` antes da Sprint 4.',
+    'No arquivo de sites ativo do Nginx, acrescentar o bloco abaixo preservando os outros sites. Nesta infraestrutura local, o destino é `C:\\var\\www\\infra\\nginx\\sites_local.conf`. Em produção, usar o arquivo realmente montado e conferir os certificados. O root é `frontend/dist`; somente as rotas técnicas são encaminhadas ao Laravel. Substitua o bloco anterior deste projeto, sem duplicar o server_name.',
     '```nginx\n' + nginxSnippet(c).trimEnd() + '\n```',
     '<!-- END FOUNDATION INSTALL INFRA -->',
   ].join('\n\n');

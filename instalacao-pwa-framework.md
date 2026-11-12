@@ -32,22 +32,22 @@ Para testar a migração sem reutilizar cache, acrescente `--no-cache` ao build 
 
 O executor usa docker run --rm (etapas 2 e 5); não cadastrar serviço de bootstrap no Compose.
 
-Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **local** e o projeto **meu-projeto**. Não duplique entradas que já estejam corretas. Os trechos são exemplos; ajuste-os antes de aplicar. Ao executar, o bootstrap atualiza este bloco com os valores reais do ambiente e preserva o restante do guia.
+Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **local** e o projeto **pwa-teste**. Não duplique entradas que já estejam corretas. Os trechos abaixo refletem a configuração central e o mapeamento deste ambiente; confira-os antes de aplicar. O restante do guia usa exemplos, que devem ser adaptados ao projeto.
 
 ### 3.1 Serviço Node no Compose existente
 
-Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite após executar o bootstrap, conforme a etapa 7.
+Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite somente após executar o bootstrap e instalar as dependências, conforme a etapa 7.
 
 ```yaml
 services:
-    meu-projeto-node:
+    pwa-teste-node:
         image: node:22-alpine
         working_dir: /app
         volumes:
             - type: bind
-              source: "C:\\var\\www\\meu-projeto\\frontend"
+              source: "C:\\var\\www\\pwa-teste\\frontend"
               target: /app
-            - meu_projeto_node_modules:/app/node_modules
+            - pwa_teste_node_modules:/app/node_modules
         ports:
             - "127.0.0.1:5176:5173"
         networks:
@@ -61,7 +61,7 @@ services:
 No mesmo Compose, localizar `services.php-fpm.volumes` e acrescentar somente a linha abaixo. Preservar os mounts atuais; não criar outro serviço PHP nem substituir sua lista de volumes.
 
 ```yaml
-- meu_projeto_vendor:/var/www/meu-projeto/backend/vendor
+- pwa_teste_vendor:/var/www/pwa-teste/backend/vendor
 ```
 
 ### 3.3 Declaração dos volumes ao final do Compose
@@ -70,34 +70,43 @@ No mesmo arquivo, mesclar estas declarações no bloco `volumes` de nível raiz,
 
 ```yaml
 volumes:
-    meu_projeto_vendor:
-        name: meu_projeto_vendor
-    meu_projeto_node_modules:
-        name: meu_projeto_node_modules
+    pwa_teste_vendor:
+        name: pwa_teste_vendor
+    pwa_teste_node_modules:
+        name: pwa_teste_node_modules
 ```
 
 ### 3.4 Site Nginx
 
-No arquivo de sites ativo do Nginx, acrescentar o bloco abaixo preservando os outros sites. Nesta infraestrutura local, o destino é `C:\var\www\infra\nginx\sites_local.conf`. Em produção, usar o arquivo realmente montado e conferir os certificados. O root desta release é `backend/public`; não apontar para `frontend/dist` antes da Sprint 4.
+No arquivo de sites ativo do Nginx, acrescentar o bloco abaixo preservando os outros sites. Nesta infraestrutura local, o destino é `C:\var\www\infra\nginx\sites_local.conf`. Em produção, usar o arquivo realmente montado e conferir os certificados. O root é `frontend/dist`; somente as rotas técnicas são encaminhadas ao Laravel. Substitua o bloco anterior deste projeto, sem duplicar o server_name.
 
 ```nginx
-# PWA FOUNDATION: meu-projeto — backend Sprint 1
+# PWA FOUNDATION: pwa-teste — PWA Sprint 4
 server {
     listen 80;
-    server_name meu-projeto.localhost;
-    root "/var/www/meu-projeto/backend/public";
-    index index.php;
+    server_name pwa-teste.localhost;
+    root "/var/www/pwa-teste/frontend/dist";
+    index index.html;
     charset utf-8;
+    add_header Cache-Control "no-cache" always;
 
-    location = / { return 302 /status; }
-    location / { try_files $uri $uri/ /index.php?$query_string; }
+    location = /sw.js { try_files $uri =404; add_header Cache-Control "no-cache" always; add_header Service-Worker-Allowed "/"; }
+    location = /manifest.webmanifest { types { application/manifest+json webmanifest; } try_files $uri =404; add_header Cache-Control "no-cache" always; }
+    location = /index.html { try_files $uri =404; add_header Cache-Control "no-cache" always; }
+    location /assets/ { try_files $uri =404; add_header Cache-Control "public, max-age=31536000, immutable"; }
+    location ~ /\. { deny all; }
+    location ~ ^/(api|sanctum|up|status)(/|$) { rewrite ^ /index.php last; }
     location = /index.php {
+        internal;
         include fastcgi_params;
         fastcgi_pass php-fpm:9000;
-        fastcgi_param SCRIPT_FILENAME "/var/www/meu-projeto/backend/public/index.php";
+        fastcgi_param SCRIPT_FILENAME "/var/www/pwa-teste/backend/public/index.php";
+        fastcgi_param DOCUMENT_ROOT "/var/www/pwa-teste/backend/public";
+        
+        add_header Cache-Control "no-store" always;
     }
-    location ~ \.php$ { return 404; }
-    location ~ /\. { deny all; }
+    location ~* \.php(/|$) { return 404; }
+    location / { try_files $uri $uri/ /index.html; }
 }
 ```
 
@@ -114,7 +123,7 @@ cd /d C:\var\www\infra
 docker compose --profile dev config --quiet
 ```
 
-A validação `config --quiet` não mostra nada quando está correta. Se os mounts e o site já estiverem aplicados, não é necessário recriar PHP-FPM nem recarregar Nginx novamente.
+A validação `config --quiet` não mostra nada quando está correta. Se os mounts já estiverem aplicados, não recrie PHP-FPM. Nesta atualização, substitua o bloco deste projeto pelo da etapa 3.4 e valide/recarregue o Nginx.
 
 Recrie somente o PHP-FPM para aplicar o mount vendor. Isso interrompe brevemente os sites PHP compartilhados; não é necessário reconstruir a imagem PHP.
 
@@ -128,7 +137,7 @@ Valide o Nginx e recarregue somente se a validação passar:
 docker compose exec -T nginx nginx -t && docker compose exec -T nginx nginx -s reload
 ```
 
-Não execute `down -v` nem inicie todo o perfil dev. O bootstrap prepara as dependências; o Vite será iniciado na etapa 7.
+Não execute `down -v` nem inicie todo o perfil dev. O bootstrap instala dependências e publica o build. Vite é opcional para desenvolvimento.
 
 ## 5. Executar o bootstrap
 
@@ -150,16 +159,17 @@ O código esperado ao concluir esta etapa é **0**. Se retornar **2**, ainda exi
 
 ## 6. Conferir o resultado
 
-O bootstrap verifica as dependências, a configuração, os bancos, as migrations e a comunicação com o backend. Se terminar com código **0**, o backend foi verificado e as dependências frontend foram preparadas. Confira:
+O bootstrap verifica as dependências, a configuração, os bancos, as migrations e a comunicação com o backend. Código **0** confirma backend, build PWA e arquivos/cabeçalhos HTTP no Nginx. Confira:
 
+- [Hello/PWA](http://meu-projeto.localhost/)
 - [Status do backend e banco](http://meu-projeto.localhost/status)
 - [Mesmo diagnóstico em JSON](http://meu-projeto.localhost/api/v1/status)
 - [Verificação básica do Laravel](http://meu-projeto.localhost/up)
 
-Abra a Hello na etapa 7. PWA, push e publicação continuam nas etapas próprias.
+Com o Vite parado, abra a Hello pelo domínio do projeto. Teste instalação pelo botão/menu, offline após o primeiro carregamento e retorno da conexão. API/banco não podem manter OK offline. Código 0 não comprova instalação nem funcionamento em aparelho; push fica na próxima etapa.
 
 
-## 7. Abrir Hello
+## 7. Desenvolvimento com Vite (opcional)
 
 No CMD:
 
@@ -170,14 +180,60 @@ vite.cmd dev
 
 Abra [http://localhost:5176](http://localhost:5176). Mantenha esse terminal aberto; encerre com Ctrl+C. Alterações em .vue/JS/CSS devem aparecer pelo HMR.
 
-Confira o status real, autocomplete, calendário em sheet, formulário/máscara, seletores, feedback, 20 ícones e as quatro transições com retorno. O formulário não grava dados. PWA/offline/push ainda não estão ativos.
+Esse endereço usa HMR e não registra o service worker. Teste a PWA pelo domínio Nginx ou pela prévia abaixo. Push ainda não está ativo.
 
-Para conferir a compilação:
+Para refazer o build e publicar em dist:
 
 ```cmd
 cd /d C:\var\www\meu-projeto\frontend
 vite.cmd build
 ```
+
+## Testar a PWA no Windows/Android por USB
+
+Após aplicar os arquivos, atualize dependências pelo bootstrap da etapa 5; alternativamente, com configuração pública já regenerada, execute na pasta infra:
+
+```cmd
+docker compose --profile dev run --rm --no-deps meu-projeto-node npm ci
+```
+
+Faça o build com `vite.cmd build` e confira os arquivos antes de abrir uma única prévia:
+
+```cmd
+docker compose --profile dev run --rm --no-deps meu-projeto-node npm run check:pwa
+```
+
+```cmd
+docker compose --profile dev run --rm --no-deps meu-projeto-node ls -l /app/dist/index.html /app/dist/manifest.webmanifest /app/dist/sw.js
+```
+
+```cmd
+docker compose --profile dev run --rm --no-deps -p 127.0.0.1:5177:4173 meu-projeto-node npm run preview
+```
+
+Abra primeiro http://localhost:5177 no Windows. Mantenha a prévia aberta. Para Android, conecte o cabo, autorize a depuração USB e, em outro CMD, use o caminho real do ADB:
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse tcp:5177 tcp:5177
+```
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse --list
+```
+
+Abra http://localhost:5177 no Chrome Android. A porta interna 4173 do log não é o endereço do aparelho. Se houver vários aparelhos, selecione com `-s`. Ctrl+C encerra a prévia.
+
+## Conferir atualização
+
+Preencha campos na Hello do build A. Altere um texto de demonstração no código e execute `vite.cmd build` para gerar B. Na aba A, clique em Verificar atualização; confirme Atualizar aplicativo e confira os campos preservados. Repita com outra aba preenchida: ela deve aguardar sua confirmação. Recusar a atualização mantém a aba atual. Sem armazenamento de sessão disponível, a atualização com campos alterados é bloqueada.
+
+O rascunho da Hello é temporário, por aba/projeto, e só é salvo ao confirmar a atualização; não salva registros no banco. Os assets anteriores são mantidos em dist/assets para abas antigas. A limpeza deles depende do plano de publicação; não apague durante este teste.
+
+## Conferir o design system
+
+Após atualizar o pacote, mantenha o Vite aberto e recarregue a Hello. Sem mudanças de dependências, não é necessário reconstruir o executor nem reinstalar npm.
+
+Confira no celular/desktop: grid e página auxiliar, fonte/ícones, formulário vazio/inválido/válido e retorno das transições. Com Tab/Enter/Espaço/Escape, confira foco, botões, campos e FAB. O status deve mostrar carregamento e nunca manter OK ao ficar offline.
 
 ## Verificações e testes
 

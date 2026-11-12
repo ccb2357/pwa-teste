@@ -10,6 +10,8 @@ import 'framework7-icons/css/framework7-icons.css';
 import './css/tokens.css';
 import './css/app.css';
 import App from './App.vue';
+import { pwa } from './pwa/index.js';
+pwa.start();
 Framework7.use(Framework7Vue);
 const app = createApp(App);
 for (const [name, component] of Object.entries({

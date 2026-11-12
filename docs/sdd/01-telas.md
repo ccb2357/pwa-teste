@@ -2,7 +2,7 @@
 
 ## Hello
 
-Rota `/`, arquivo `frontend/src/pages/hello.vue`. Aparência nativa do Framework7 autorizada para a fundação; sem referência visual aprovada ainda. Identidade pública derivada do central, navbar, boas-vindas, status real e atualização manual. Estado de implementação e evidências em MEMORY.md.
+Rota `/`, arquivo `frontend/src/pages/hello.vue`. Aparência nativa do Framework7 aprovada pelo responsável na Sprint 2; sem captura visual anexada como referência versionada. Identidade pública derivada do central, navbar, boas-vindas, status real e atualização manual. Estado de implementação e evidências em MEMORY.md.
 
 
 
@@ -30,9 +30,9 @@ Usar os componentes oficiais Framework7 Vue quando disponíveis e APIs Core docu
 
 O status da API/banco deve vir de /api/v1/status e mostrar carregamento, sucesso, erro, indisponibilidade ou não verificado. Offline ou falha de requisição não podem manter um OK antigo como se fosse uma checagem atual. Não consultar MySQL diretamente pelo navegador nem expor credenciais. As demonstrações usam dados locais de exemplo; sua interação não comprova persistência.
 
-Reservar na mesma página os estados de instalação, preparo offline e atualização da PWA, cuja integração funcional pertence à Sprint 4; na Sprint 2 não declarar esses recursos concluídos. Documentar Hello e página auxiliar em 01-telas.md, padrões/componentes em 02-design-system.md e comandos/URL em instalacao-pwa-framework.md.
+PwaStatus.vue na Hello mostra conexão, modo dev, instalação/menu manual, preparo offline, versão e atualização disponível. O worker é registrado apenas no build; validar a integração em navegador real. Documentar Hello e página auxiliar em 01-telas.md, padrões/componentes em 02-design-system.md e comandos/URL em instalacao-pwa-framework.md.
 
-**Aceite da Sprint 2:** Hello acessível pelo Vite no Windows; HMR .vue/JS/CSS operacional; status real pelo proxy; todas as demonstrações da tabela funcionam, incluindo seleção de sugestões, calendário subindo como sheet, os quatro exemplos de transição com retorno, formulário, máscara e validação. Nenhum controle equivalente é recriado fora das APIs oficiais; não há persistência nas demonstrações. Instalação/offline/atualização permanecem explicitamente pendentes para a Sprint 4.
+**Aceite da Sprint 2:** Hello acessível pelo Vite no Windows; HMR .vue/JS/CSS operacional; status real pelo proxy; todas as demonstrações da tabela funcionam, incluindo seleção de sugestões, calendário subindo como sheet, os quatro exemplos de transição com retorno, formulário, máscara e validação. Nenhum controle equivalente é recriado fora das APIs oficiais; não há persistência nas demonstrações. Aceite PWA é separado do desenvolvimento via Vite.
 
 
 ## Destino de transição
@@ -51,6 +51,12 @@ Carregamento/sucesso/falha explícitos; offline nunca indica banco saudável sem
 
 Título/nome vêm da configuração pública gerada. BackendStatus faz GET fresco com credentials include e cache no-store; estados carregando/OK/503/falha/offline/não verificado, cancelamento/timeout e descarte de respostas antigas. Eventos offline limpam o OK anterior; online consulta novamente. Formulário apenas confirma, não transmite dados; celular brasileiro com DDD e 11 dígitos. Inputs Vue mantêm o valor formatado da máscara. Autocomplete local: Blumenau, Florianópolis, Balneário Camboriú, Curitiba, São Paulo e Rio de Janeiro. Calendar usa openIn=sheet em todas as larguras; Smart Select usa popup. Hello mantém seu estado ao visitar as páginas auxiliares. APIs Core/máscaras/validadores são destruídos ao remover a página. Movimento reduzido desativa animação da navegação.
 
-Instalação/offline/atualização aparecem como pendentes da Sprint 4; Web Push permanece na Sprint 5 e não é confundido com notification interna.
+Instalação/offline/atualização são funcionais no build; Web Push permanece na Sprint 5 e não é confundido com notification interna.
 
 Os nomes exibidos cover-v/dive/fade/parallax correspondem aos identificadores nativos f7-cover-v/f7-dive/f7-fade/f7-parallax nas opções do roteador, preservando avanço e retorno oficiais.
+
+
+Hello e destino de transição compartilham app-content/app-heading e tokens de 02-design-system.md. Ações usam botões HTML pela prop type do Framework7; retorno mantém link back. Status tem preloader, aria-busy e resultado anunciado; validação associa erros aos campos e rótulos nativos aos inputs. FAB permanece Speed Dial oficial com suporte de teclado e estado acessível. Conferência visual dos ajustes e foco no ambiente do responsável pendente de aceite.
+
+
+Atualização exige confirmação explícita. Campos da Hello (cidade/data/e-mail/celular/checkbox/linguagem/contador) podem ser preservados temporariamente por aba durante a recarga; não há envio nem persistência de registros. Data é serializada/restaurada e a máscara sincronizada. Aba alterada não é recarregada por outra aba; storage indisponível bloqueia atualização com alterações. No iPhone, orientar Compartilhar → Adicionar à Tela de Início quando não houver prompt.

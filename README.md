@@ -242,7 +242,7 @@ Incluir em AGENTS.md/RULES.md a exigência de arquivos atuais para nova análise
 | Testes backend | **PHPUnit**, integrado às ferramentas de teste do Laravel |
 | Desenvolvimento e build | Vite **8.3.4** com **@vitejs/plugin-vue** para componentes .vue |
 | Ambiente Node | Imagem Docker **node:22-alpine** |
-| PWA/Service Worker | **vite-plugin-pwa + Workbox injectManifest**, fonte única frontend/src/sw.js, precache, offline, atualização e eventos push/clique |
+| PWA/Service Worker | **vite-plugin-pwa 2.0.0 + Workbox 7.4.1 injectManifest**, fonte única frontend/src/sw.js, precache, offline, atualização e eventos push/clique |
 | Push Notifications | Notifications Laravel + **laravel-notification-channels/webpush**, Web Push/VAPID e cliente Push API; versão compatível a fixar na Sprint 5 |
 | Fila de envio | Laravel **database** no MySQL existente; Jobs/worker no PHP-FPM, operados por mecanismo existente ou Cron, sem novo contêiner |
 | Backend/API | Laravel **12.70.0** |
@@ -862,7 +862,7 @@ Exibir mensagem de boas-vindas, nome do projeto vindo da configuração central,
 | Calendar | Calendário oficial aberto como sheet de baixo para cima, inclusive em desktop; não substituir por modal central ou datepicker do navegador. |
 | Checkbox | Controle oficial com estado reativo. |
 | Dialog | Diálogo modal oficial com abertura, confirmação/cancelamento e fechamento. |
-| FAB | Floating Action Button oficial com ação demonstrativa. |
+| FAB | Speed Dial oficial com três ações para cima, +/×, fechamento e feedback por toast. |
 | Ícones Lucide | Seção com aproximadamente 20 ícones Lucide distintos, identificados; não usar Framework7 Icons nessa seção. |
 | Notifications | Notificações oficiais com abertura e fechamento. |
 | Sheet Modal | Sheet oficial com abertura e fechamento, além da demonstração do calendário. |
@@ -1117,3 +1117,17 @@ Registrar procedimentos concretos em instalacao-pwa-framework.md antes da primei
 - Validar configuração/logs sem segredos e fila/Cron ativa. Na publicação, reiniciar worker quando aplicável; job enfileirado não comprova processamento/envio.
 
 Sprints constroem a fundação; seção 0 rege clones. Aplicar convenções e registrar evidências por etapa. Publicação, aparelhos e entrega push real continuam pendentes até validação no ambiente correspondente.
+
+<!-- BEGIN FOUNDATION IDENTITY -->
+| Campo | Valor |
+| --- | --- |
+| Projeto | PWA Framework |
+| Slug | pwa-teste |
+| Ambiente | local |
+| URL | http://pwa-teste.localhost |
+| Dev / preview | 5176 / 5177 |
+| Serviço / Compose | pwa-teste-node / infra |
+| Volumes | pwa_teste_vendor, pwa_teste_node_modules |
+| Bancos | pwa_teste, pwa_teste_test |
+| Fundação | 0.4.0-sprint.4 |
+<!-- END FOUNDATION IDENTITY -->

@@ -23,3 +23,12 @@ export async function installFrontend(c, d) {
   await docker(frontendCommand(c, d, ['node', '-e', "const fs=require('node:fs');fs.writeFileSync('node_modules/.foundation-lock',fs.readFileSync(0,'utf8')); "]), { input: fingerprint + '\n', label: 'Marcador node_modules' });
   return fingerprint;
 }
+export async function buildFrontend(c, d) {
+  console.log('Compilando frontend e verificando os artefatos PWA.');
+  await docker(frontendCommand(c, d, ['npm', 'run', 'build']), { label: 'Build PWA', timeout: 900000 });
+  const result = jsonOutput(await docker(frontendCommand(c, d, ['node', 'scripts/check-pwa.mjs', '--json']), { label: 'Artefatos PWA' }), 'Artefatos PWA');
+  requireThat(typeof result.buildId === 'string' && /^[a-z0-9.-]+$/.test(result.buildId) && Array.isArray(result.files) && result.files.length > 0, 'Build PWA sem identificação/arquivos válidos.');
+  requireThat(result.files.every(f => typeof f === 'string' && /^(index\.html|offline\.html|manifest\.webmanifest|assets\/[\w.-]+\.(js|css|woff2?|ttf)|fonts\/[\w.-]+\.woff2|icons\/icon-(180|192|512)\.png)$/.test(f)), 'Artefatos PWA inesperados.');
+  requireThat(result.files.includes(result.entry) && /^assets\/[\w.-]+\.js$/.test(result.entry), 'Entrada do build PWA inválida.');
+  return result;
+}

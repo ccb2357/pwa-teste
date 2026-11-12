@@ -1,6 +1,6 @@
 {
-  "foundationVersion": "0.2.0-sprint.2",
-  "stage": "frontend",
+  "foundationVersion": "0.4.0-sprint.4",
+  "stage": "pwa",
   "completeFoundation": false,
   "skeleton": {
     "package": "laravel/laravel",
@@ -23,6 +23,8 @@
     "imask": "7.6.1",
     "just-validate": "4.3.0",
     "@vitejs/plugin-vue": "6.0.11",
-    "vite": "8.3.4"
+    "vite": "8.3.4",
+    "vite-plugin-pwa": "2.0.0",
+    "workbox": "7.4.1"
   }
 }
