@@ -74,7 +74,14 @@ test('preparation exits 2 before dependencies/env writes when effective infra is
     const guide = await fs.readFile(f.root + '/instalacao-pwa-framework.md', 'utf8');
     assert.match(guide, /product-a-node/); assert.match(guide, /product_a_vendor/);
     assert.match(guide, /server_name product-a.localhost/);
-    const firstRun = guide.indexOf('docker compose run --rm pwa-foundation-bootstrap --project');
+    const firstRun = guide.indexOf('```cmd\ndocker run --rm');
+    assert.ok(firstRun > 0);
+    assert.doesNotMatch(guide, /docker compose (?:run.*|build) pwa-foundation-bootstrap/);
+    assert.doesNotMatch(guide, /services:\s+pwa-foundation-bootstrap:/);
+    assert.match(guide, /docker build -t pwa-foundation-bootstrap:0\.1\.0/);
+    assert.match(guide, /source=C:\\var\\www,target=\/var\/www/);
+    assert.match(guide, /--network infra_network/);
+    assert.match(guide, /não cadastrar serviço de bootstrap no Compose/);
     assert.ok(guide.indexOf('### 3.4 Site Nginx') < guide.indexOf('## 4. Validar e aplicar a infraestrutura'));
     assert.ok(guide.indexOf('## 4. Validar e aplicar a infraestrutura') < firstRun);
     assert.ok(guide.indexOf('## 5. Executar o bootstrap') < firstRun);

@@ -4,7 +4,7 @@
 
 Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. **Sprint 1 validada no Windows/Docker do responsável. Sprint 2 instalada com aparência aprovada pelo responsável; ajuste do FAB entregue para nova conferência.** Backend preservado; frontend Framework7 Vue, Hello, grid/CSS nativos, Nunito local e integrações npm/configuração pública disponíveis. Sem outra biblioteca de estilos. Não declarar aceite visual, HMR no Windows ou integração frontend/MySQL local do responsável sem sua confirmação.
 
-Próximo passo concreto: aplicar pacote cumulativo preservando arquivos privados/volumes; executar o mesmo bootstrap na pasta infra (sem rebuild da imagem) para instalar frontend e gerar configuração; iniciar frontend/vite.cmd dev e abrir http://localhost:5176. Conferir HMR, status real e todos os controles/transições. Guia da raiz contém os comandos. PWA/worker na Sprint 4, push na 5, fechamento na 6; não confundir build compilado com PWA instalada.
+Próximo passo concreto: aplicar o pacote cumulativo preservando privados/volumes; remover somente o serviço pwa-foundation-bootstrap do Compose; construir a imagem com --no-cache para testar a migração e executar docker run --rm conforme a etapa 5 do guia. Não refazer integrações da infraestrutura já aplicadas. Confirmar sucesso e reexecução antes da Sprint 3. PWA/worker na Sprint 4, push na 5, fechamento na 6.
 
 ## Entregue
 
@@ -12,7 +12,7 @@ Próximo passo concreto: aplicar pacote cumulativo preservando arquivos privados
 - Laravel 12.70.0, Sanctum 4.4.0, PHPUnit 11.5.57, Pint 1.30.4 e demais dependências em composer.json/lock. Esqueleto e framework têm versões diferentes. Sem vendor no pacote.
 - app:sync, diagnóstico HTML/JSON com consulta real, no-store, 503 e rotas independentes de sessão; Sanctum/CSRF preparado, sem login.
 - Bootstrap ES modules executável: validação central, identificação/mapeamento Compose, geração manual de infra, verificação de portas, env/APP_KEY, permissões, bancos com conta existente, Composer idempotente e app:sync. Migrations de produção exigem --force; sem env testing gerado em produção.
-- Dockerfile/entrypoint/dependências isoladas do executor; serviço pwa-foundation-bootstrap para inclusão manual. Docker CLI 28.5.1 e Compose 2.40.3 copiados da imagem docker:28.5.1-cli. Host do usuário usa Compose 5.1.3, que não foi substituído.
+- Dockerfile/entrypoint/dependências isoladas do executor; imagem pwa-foundation-bootstrap:0.1.0 por docker build/docker run --rm, sem serviço próprio no Compose. Docker CLI 28.5.1 e Compose 2.40.3 copiados da imagem docker:28.5.1-cli. Host do usuário usa Compose 5.1.3, que não foi substituído.
 - Frontend Framework7 Vue/Hello, manifests e lockfile npm, configuração pública e frontend/vite.cmd para dev/build entregues na Sprint 2; validação local pendente.
 - Blocos Compose/Nginx em instalacao-pwa-framework.md, regenerados após preencher o central. Não usar como novo Compose/override nem substituir os mounts existentes.
 - SDD, regras, metadados e testes cumulativos. Segredos recebidos não foram reutilizados ou incluídos.
@@ -158,3 +158,10 @@ Decisão aprovada: README passa a especificar somente Framework7 (CSS/grid), tok
 ## Ajuste do FAB — 2026-11-12
 
 O responsável aprovou a Hello e solicitou FAB Speed Dial em vez de dialog. Usados f7-fab-buttons/f7-fab-button oficiais, expansão superior com três ações numeradas e rótulos, ícones +/× nativos; cada ação fecha o menu e mostra toast. Sem CSS ou animação próprios. Build aprovado. DOM simulado com bundle real confirmou abertura/fechamento nativos, três ações com fechamento/toast e ausência de dialog; demais interações continuaram passando, sem erros JavaScript. Conferência visual da expansão no Windows pendente.
+
+
+## Executor fora do Compose — 2026-11-12
+
+Decisão aprovada: manter Dockerfile, entrypoint e lógica Node existentes; substituir somente a forma de iniciar o executor por docker build e docker run --rm, sem foundation.cmd/foundation.sh. Guia inclui remoção manual exclusiva do serviço antigo, build sem cache opcional para validar a migração, execução CMD/Linux e testes bootstrap temporários sem socket (Engine simulado). Gerador de infraestrutura explicita que não se cadastra executor no Compose. README, AGENTS e contrato de ambiente alinhados. Backend, frontend, central, volumes e serviços do aplicativo preservados. Execução real por docker run no Windows/VPS ainda pendente.
+
+Verificação desta mudança: 31 testes Node passaram (27 bootstrap/orquestração com Engine/Compose simulados e 4 cliente API). Guia regenerado conserva execução direta, ausência de serviço do executor e ordem infraestrutura → execução. Pacote conserva Dockerfile, entrypoint, manifests/lockfiles, backend e frontend idênticos à entrega anterior. Não foi realizado build novo nem docker run real no ambiente do responsável.

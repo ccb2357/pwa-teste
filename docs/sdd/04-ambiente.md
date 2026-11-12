@@ -72,6 +72,8 @@ Lista pública permitida: nome/slug, localidade/fuso de exibição, identidade P
 
 ## Implementação do executor
 
+A imagem pwa-foundation-bootstrap:0.1.0 é construída com docker build e executada com docker run --rm; não cadastrar serviço de bootstrap no Compose. Montar a raiz real dos projetos e o socket do Engine, informar working_dir, FOUNDATION_PROJECTS_ROOT e rede existente. --rm remove o executor ao terminar, preservando imagem, binds e volumes nomeados do aplicativo. Comandos CMD/Linux e migração do serviço antigo estão no guia da raiz. Não criar foundation.cmd/foundation.sh.
+
 [scripts/bootstrap/Dockerfile](../../scripts/bootstrap/Dockerfile) usa node:22-alpine e copia Docker CLI 28.5.1 e Compose 2.40.3 da imagem docker:28.5.1-cli. Não inclui nem inicia dockerd. O parser dotenv 16.6.1 é instalado pelo package-lock próprio em /opt/foundation, antes de existir node_modules do aplicativo.
 
 O entrypoint aceita --project absoluto e --force opcional, resolve realpath e impede escape por symlinks da raiz FOUNDATION_PROJECTS_ROOT (padrão /var/www). Executa scripts/bootstrap/index.mjs do alvo. Lógica em módulos ES; child_process com shell false e argumentos separados. Nenhum runtime é exigido no host além de Docker/Compose. O acesso ao Engine usa o socket montado; falha de permissão interrompe.

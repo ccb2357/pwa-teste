@@ -20,7 +20,7 @@ Fundação reutilizável com Framework7 Vue, Laravel/MySQL, PWA e Web Push, conf
 4. O responsável aplica manualmente todas as alterações, valida o Compose, disponibiliza o mount PHP e valida/recarrega o Nginx. Não executar o bootstrap local antes dessa preparação.
 5. Executar pwa-foundation-bootstrap: conferir infra, atualizar trechos e inicializar. Código 2 exige corrigir/aplicar pendências e repetir; frontend/build/push são integrados nas respectivas sprints.
 
-**Entregar o bootstrap funcional, não apenas instruções.** Conferir o código existente e completar `scripts/bootstrap/index.mjs`, módulos, templates, Dockerfile e entrypoint para Windows/Linux via Docker. O serviço é `pwa-foundation-bootstrap`. Clones executam essa base pronta; `app:sync` continua restrito a caches e migrations.
+**Entregar o bootstrap funcional, não apenas instruções.** Conferir o código existente e completar `scripts/bootstrap/index.mjs`, módulos, templates, Dockerfile e entrypoint para Windows/Linux via Docker. A imagem é `pwa-foundation-bootstrap:0.1.0`, executada com `docker run --rm`, sem serviço de bootstrap no Compose. Clones executam essa base pronta; `app:sync` continua restrito a caches e migrations.
 
 **Ordem de implementação:**
 
@@ -109,7 +109,7 @@ Implementar o bootstrap em JavaScript ES modules com Node 22 no Docker. O host W
 
 Antes de analisar a infraestrutura, solicitar os arquivos atuais e confirmar Composer no PHP-FPM. Não arquivar cópias nem usar o serviço Node de outro produto.
 
-Executar **pwa-foundation-bootstrap** sob demanda no Compose compartilhado, independente de `<slug>-node`. Entregar sua inclusão manual na Sprint 1. Não criar outro Compose nem daemon de bootstrap em produção.
+Executar a imagem **pwa-foundation-bootstrap** sob demanda com `docker run --rm`, independente de `<slug>-node`. Entregar Dockerfile e comandos no guia, sem serviço de bootstrap no Compose, Compose adicional ou atalhos de bootstrap no host.
 
 Contrato obrigatório do executor a implementar:
 
@@ -121,13 +121,7 @@ Contrato obrigatório do executor a implementar:
 - Carregar dotenv como dados usando parser disponível antes da instalação do frontend. Qualquer dependência do executor deve estar fixada e instalada na imagem/lockfile próprio do executor; ele não pode depender do node_modules do aplicativo que ainda está sendo preparado.
 - Saídas: 0 validado, 1 erro, 2 ação manual pendente. Propagar códigos e estado sem segredos. Conferir portas no host/Engine; porta livre dentro do executor não comprova disponibilidade no Windows/VPS.
 
-Na pasta infra, usar CMD no Windows ou terminal Linux; adaptar a raiz interna e integrar antes o executor:
-
-```text
-docker compose run --rm pwa-foundation-bootstrap --project /var/www/meu-projeto
-```
-
-`--project` localiza o central e o index.mjs do alvo; adaptar o caminho ao mount real. Implementar bootstrap, frontend e push nas etapas previstas. Comandos concretos ficam em instalacao-pwa-framework.md.
+Construir a imagem com `docker build` e executá-la com `docker run --rm`, passando raiz de projetos, socket do Engine, rede e `--project`. Este argumento localiza o central e o index.mjs do alvo. Comandos completos para CMD e Linux ficam em instalacao-pwa-framework.md.
 
 ### Localhost, primeira instalação na VPS e atualizações
 
@@ -163,18 +157,14 @@ PRODUCTION_URL=https://meu-projeto.com.br
 
 **Primeira publicação na VPS, inclusive no meio do desenvolvimento:**
 
-1. Mapear Docker/Compose, mounts e serviços atuais da VPS; integrar o executor ausente.
+1. Mapear Docker/Compose, mounts e serviços atuais da VPS; construir a imagem do executor.
 2. Clonar/atualizar o aplicativo mantendo slug/pasta; sem recriar Laravel/Vite ou repetir sprints.
 3. Criar central próprio na VPS: production, URL HTTPS, caminhos/serviços e credenciais; VAPID próprias quando habilitado.
 4. Preparar/aplicar os trechos Compose/Nginx, serviços e certificado reais. Se o bootstrap gerar divergências, corrigir manualmente e validar antes de retomar.
 5. Executar bootstrap: lockfiles, configuração, APP_KEY ausente, bancos permitidos, build e validação. Produção exige --force explícito para migrations; sem ele, não declarar conclusão.
 6. Registrar versão/evidências/pendências; sem HTTPS/integração não há aceite de publicação.
 
-Exemplo de reexecução autorizando migrations em produção, com o executor já integrado:
-
-```text
-docker compose run --rm pwa-foundation-bootstrap --project /var/www/meu-projeto --force
-```
+Reexecução em produção usa o mesmo `docker run --rm`, com `--force` para autorizar migrations. Comando completo no guia de instalação.
 
 **Atualizações:** seguir backup/publicação da seção 19, aplicar `git pull` e repetir bootstrap (`--force` em produção). Comparar lockfiles/estado, reconstruir só o necessário e aplicar migrations pendentes. Infra divergente retorna 2 até aplicação manual. Preservar chaves APP_KEY/VAPID, dados, volumes e personalizações; não restaurar Hello sobre o produto. Transferência de banco exige exportação/importação separada.
 
@@ -184,7 +174,7 @@ docker compose run --rm pwa-foundation-bootstrap --project /var/www/meu-projeto 
 
 **Preparação, disponível antes do serviço Node do projeto existir:**
 
-- Versionar index.mjs, módulos, templates e executor em scripts/bootstrap/. Usar pwa-foundation-bootstrap sem Node do produto/runtime do host. Sem Compose separado; atalhos opcionais não contêm lógica própria.
+- Versionar index.mjs, módulos, templates e executor em scripts/bootstrap/. Usar pwa-foundation-bootstrap sem Node do produto/runtime do host. Sem serviço de bootstrap no Compose ou atalhos de bootstrap no host.
 - Validar arquivo central, sintaxe, valores obrigatórios, portas, identificadores, cores, caminhos e Docker/Compose. Ler dotenv como dados, sem executar o conteúdo como script; tratar espaços, aspas e caracteres especiais de senhas corretamente, sem imprimi-las ou passá-las em argumentos visíveis.
 - Detectar conflitos de nomes/portas com outros projetos, distinguindo recursos já pertencentes ao clone. Comparar a configuração desejada com o estado efetivo, sem confiar somente em marcadores de execuções anteriores.
 - Gerar no guia trechos mínimos de Node/mounts/volumes/Nginx sem credenciais, reutilizando recursos. O responsável aplica, valida, recria apenas serviços afetados e recarrega Nginx.
@@ -306,8 +296,8 @@ nome-do-projeto/
 |---|---|
 | .env.foundation | Entrada central por projeto/ambiente; não versionar nem servir ao navegador |
 | .env.foundation.example | Modelo versionado sem credenciais, com padrões e campos explicados |
-| scripts/bootstrap/index.mjs | Entrada Node portátil: preparação, espera por infraestrutura manual e inicialização; executada pelo serviço pwa-foundation-bootstrap |
-| scripts/bootstrap/ | Módulos, templates, Dockerfile e entrypoint do executor; trecho para inclusão manual no Compose compartilhado |
+| scripts/bootstrap/index.mjs | Entrada Node portátil: preparação, espera por infraestrutura manual e inicialização; executada em contêiner temporário com docker run --rm |
+| scripts/bootstrap/ | Módulos, templates, Dockerfile e entrypoint do executor; build e execução direta por Docker, sem cadastro no Compose |
 | instalacao-pwa-framework.md | Roteiro único de instalação e operação; blocos Compose/Nginx gerenciados pelo bootstrap, sem alterar a infraestrutura automaticamente |
 | frontend/ | Projeto independente com Vite, Vue 3, Framework7 Vue e recursos da PWA |
 | frontend/vite.cmd | Atalho Windows obrigatório, criado na fundação para executar desenvolvimento e build pelo Docker Compose |

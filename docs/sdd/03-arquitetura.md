@@ -14,7 +14,7 @@ Dados: migrations iniciais oficiais Laravel; banco principal e banco testing sep
 
 PWA planejada para Sprint 4 via vite-plugin-pwa/Workbox injectManifest e fonte sw.js única, virtual:pwa-register, registerType prompt, desativado em dev. Cache público só para shell/recursos estáticos, nunca API/sessão/CSRF/status. Atualização detectada automaticamente, aplicada em momento seguro com tratamento de formulário alterado e múltiplas abas.
 
-Bootstrap é Node ES modules, Docker CLI/Compose no executor temporário e socket do Engine existente. Sem Docker-in-Docker, shell de host ou dependência do node_modules do aplicativo. Contrato, derivações e mapeamento em [04-ambiente.md](04-ambiente.md).
+Bootstrap é Node ES modules, Docker CLI/Compose no executor temporário (docker run --rm, sem serviço no Compose) e socket do Engine existente. Sem Docker-in-Docker, shell de host ou dependência do node_modules do aplicativo. Contrato, derivações e mapeamento em [04-ambiente.md](04-ambiente.md).
 
 ## Módulos backend e inicialização
 

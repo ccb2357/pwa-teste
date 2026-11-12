@@ -11,36 +11,24 @@ Prepare o arquivo de configuração central **manualmente**:
    - Se `.env.foundation` já existir, mantenha o arquivo atual; não o substitua pelo exemplo.
    - Abra `.env.foundation` no VSCode ou em outro editor de texto, confira os campos e salve as alterações.
 
-## 2. Adicionar o executor ao Compose
+## 2. Construir a imagem do executor
 
-Em `C:\var\www\infra\docker-compose.yml`, acrescentar o serviço abaixo ao `services` existente. Não duplicar a chave `services` nem criar outro Compose.
+No **Prompt de Comando (CMD)**:
 
-```yaml
-# TRECHO: incluir somente pwa-foundation-bootstrap no services do Compose EXISTENTE.
-# Não executar este arquivo como uma segunda pilha.
-services:
-    pwa-foundation-bootstrap:
-        build:
-            context: ../pwa-teste/scripts/bootstrap
-            dockerfile: Dockerfile
-        image: pwa-foundation-bootstrap:0.1.0
-        working_dir: /var/www/infra
-        environment:
-            FOUNDATION_PROJECTS_ROOT: /var/www
-        volumes:
-            - ../:/var/www
-            - /var/run/docker.sock:/var/run/docker.sock
-        networks:
-            - infra_network
-        profiles:
-            - tools
+```cmd
+cd /d C:\var\www\infra
+docker build -t pwa-foundation-bootstrap:0.1.0 ../pwa-teste/scripts/bootstrap
 ```
 
-Se o serviço já existir com esses valores, mantenha-o. Salve o Compose. Ainda não execute o bootstrap.
+O executor roda temporariamente, fora do Compose. Se já houver um serviço `pwa-foundation-bootstrap` no Compose, remova somente esse bloco e salve; preserve os demais serviços, volumes e rede. Não crie atalhos de bootstrap.
+
+Para testar a migração sem reutilizar cache, acrescente `--no-cache` ao build acima. Não é necessário apagar a imagem antiga. Nas próximas execuções, reconstrua apenas se o Dockerfile, entrypoint ou dependências do executor mudarem.
 
 <!-- BEGIN FOUNDATION INSTALL INFRA -->
 
 ## 3. Preparar serviço Node, mount, volumes e site
+
+O executor usa docker run --rm (etapas 2 e 5); não cadastrar serviço de bootstrap no Compose.
 
 Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **local** e o projeto **pwa-teste**. Não duplique entradas que já estejam corretas. Os valores desta entrega estão prontos para pwa-teste local; se o central usar outros nomes, caminhos ou portas, ajuste os trechos para esse ambiente antes de aplicá-los. O bootstrap atualiza este bloco ao conferir o ambiente, preservando o restante do guia.
 
@@ -115,17 +103,16 @@ server {
 
 ## 4. Validar e aplicar a infraestrutura
 
-Somente depois de salvar **todas** as alterações das etapas 2 e 3, abra o **Prompt de Comando (CMD)**. Execute uma linha por vez; se um comando falhar, corrija antes de continuar.
+Somente depois de construir a imagem e salvar **todas** as alterações da etapa 3, abra o **Prompt de Comando (CMD)**. Execute uma linha por vez; se um comando falhar, corrija antes de continuar.
 
-Entre na pasta da infraestrutura, valide o Compose e construa a imagem do executor:
+Entre na pasta da infraestrutura e valide o Compose:
 
 ```cmd
 cd /d C:\var\www\infra
-docker compose --profile dev --profile tools config --quiet
-docker compose build pwa-foundation-bootstrap
+docker compose --profile dev config --quiet
 ```
 
-A validação `config --quiet` não mostra nada quando está correta. Se a imagem do executor já estiver construída e seu Dockerfile não mudou, não é necessário reconstruí-la.
+A validação `config --quiet` não mostra nada quando está correta. Se os mounts e o site já estiverem aplicados, não é necessário recriar PHP-FPM nem recarregar Nginx novamente.
 
 Recrie somente o PHP-FPM para aplicar o mount vendor. Isso interrompe brevemente os sites PHP compartilhados; não é necessário reconstruir a imagem PHP.
 
@@ -146,9 +133,18 @@ Não execute `down -v` nem inicie todo o perfil dev. O bootstrap prepara as depe
 Agora o serviço Node, os volumes, o mount PHP-FPM e o site Nginx devem estar configurados e aplicados. Execute:
 
 ```cmd
-docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste
+docker run --rm ^
+  --workdir /var/www/infra ^
+  --env FOUNDATION_PROJECTS_ROOT=/var/www ^
+  --mount "type=bind,source=C:\var\www,target=/var/www" ^
+  --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock ^
+  --network infra_network ^
+  pwa-foundation-bootstrap:0.1.0 ^
+  --project /var/www/pwa-teste
 echo %ERRORLEVEL%
 ```
+
+O `^` continua o comando na linha seguinte no CMD. Ao terminar, o contêiner é removido; a imagem e os dados do projeto permanecem.
 
 O código esperado ao concluir esta etapa é **0**. Se retornar **2**, ainda existe alguma pendência: leia a lista exibida, confira as alterações da etapa 3, aplique-as conforme a etapa 4 e repita este comando. Não é necessário refazer as etapas que já estiverem corretas. Código **1** indica erro; envie a mensagem para análise.
 
@@ -206,7 +202,12 @@ docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php vendor/bin/pint
 Testes do bootstrap:
 
 ```cmd
-docker compose run --rm --entrypoint node pwa-foundation-bootstrap --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
+docker run --rm ^
+  --workdir /var/www/infra ^
+  --mount "type=bind,source=C:\var\www,target=/var/www" ^
+  --entrypoint node ^
+  pwa-foundation-bootstrap:0.1.0 ^
+  --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
 ```
 
 Testes do cliente API frontend, na pasta infra:
@@ -231,7 +232,15 @@ docker compose exec -T -w /var/www/pwa-teste/backend php-fpm php artisan app:syn
 Na pasta infra da VPS, com `.env.foundation` de produção, Compose, Nginx e HTTPS preparados:
 
 ```bash
-docker compose run --rm pwa-foundation-bootstrap --project /var/www/pwa-teste --force
+docker build -t pwa-foundation-bootstrap:0.1.0 ../pwa-teste/scripts/bootstrap
+docker run --rm \
+  --workdir /var/www/infra \
+  --env FOUNDATION_PROJECTS_ROOT=/var/www \
+  --mount type=bind,source=/var/www,target=/var/www \
+  --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+  --network infra_network \
+  pwa-foundation-bootstrap:0.1.0 \
+  --project /var/www/pwa-teste --force
 ```
 
-Para atualizar: faça backup, execute `git pull` na pasta do projeto e repita o comando acima na pasta infra. Ajuste `/var/www/pwa-teste` ao caminho interno real da VPS.
+Para atualizar: faça backup, execute `git pull` na pasta do projeto e repita o comando acima na pasta infra. Ajuste o source do mount, a raiz interna, a rede e os caminhos ao ambiente real da VPS. A imagem só precisa ser reconstruída quando seu conteúdo mudar.
