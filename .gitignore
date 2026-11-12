@@ -26,3 +26,6 @@ Thumbs.db
 .foundation-bootstrap.lock/
 **/.phpunit.cache/
 **/.phpunit.result.cache
+
+# Saída pública derivada do central por ambiente
+frontend/.foundation.public.json

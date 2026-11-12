@@ -1,10 +1,10 @@
 # Retomada
 
-## Objetivo e estado vigente — 2026-11-11
+## Objetivo e estado vigente — 2026-11-12
 
-Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. **Sprint 1 concluída e validada no ambiente local Windows/Docker do responsável.** Evidências recebidas: bootstrap concluído, dependências preservadas na reexecução, app:sync e verificações HTTP/CSRF OK; /status, /api/v1/status e /up OK; 14 testes PHP com 57 assertions, incluindo MySQL real; Pint aprovado em 36 arquivos; nova execução dos 25 testes Node confirmada como bem-sucedida pelo responsável após correção do runtime da fixture.
+Construir PWA Framework conforme README. Projeto local C:\var\www\pwa-teste, slug pwa-teste. **Sprint 1 validada no Windows/Docker do responsável. Sprint 2 instalada com aparência aprovada pelo responsável; ajuste do FAB entregue para nova conferência.** Backend preservado; frontend Framework7 Vue, Hello, grid/CSS nativos, Nunito local e integrações npm/configuração pública disponíveis. Sem outra biblioteca de estilos. Não declarar aceite visual, HMR no Windows ou integração frontend/MySQL local do responsável sem sua confirmação.
 
-Próximo passo concreto: iniciar a Sprint 2, frontend Framework7 Vue e página Hello conforme README e SDD. Não repetir os checks aprovados sem alteração relevante. Frontend/PWA, aparelhos e VPS continuam com os aceites próprios das próximas etapas; a fundação completa ainda está em construção.
+Próximo passo concreto: aplicar pacote cumulativo preservando arquivos privados/volumes; executar o mesmo bootstrap na pasta infra (sem rebuild da imagem) para instalar frontend e gerar configuração; iniciar frontend/vite.cmd dev e abrir http://localhost:5176. Conferir HMR, status real e todos os controles/transições. Guia da raiz contém os comandos. PWA/worker na Sprint 4, push na 5, fechamento na 6; não confundir build compilado com PWA instalada.
 
 ## Entregue
 
@@ -13,7 +13,7 @@ Próximo passo concreto: iniciar a Sprint 2, frontend Framework7 Vue e página H
 - app:sync, diagnóstico HTML/JSON com consulta real, no-store, 503 e rotas independentes de sessão; Sanctum/CSRF preparado, sem login.
 - Bootstrap ES modules executável: validação central, identificação/mapeamento Compose, geração manual de infra, verificação de portas, env/APP_KEY, permissões, bancos com conta existente, Composer idempotente e app:sync. Migrations de produção exigem --force; sem env testing gerado em produção.
 - Dockerfile/entrypoint/dependências isoladas do executor; serviço pwa-foundation-bootstrap para inclusão manual. Docker CLI 28.5.1 e Compose 2.40.3 copiados da imagem docker:28.5.1-cli. Host do usuário usa Compose 5.1.3, que não foi substituído.
-- frontend/vite.cmd entregue e derivado; manifests/dev/build serão da Sprint 2. Não executar o atalho antes dessa etapa.
+- Frontend Framework7 Vue/Hello, manifests e lockfile npm, configuração pública e frontend/vite.cmd para dev/build entregues na Sprint 2; validação local pendente.
 - Blocos Compose/Nginx em instalacao-pwa-framework.md, regenerados após preencher o central. Não usar como novo Compose/override nem substituir os mounts existentes.
 - SDD, regras, metadados e testes cumulativos. Segredos recebidos não foram reutilizados ou incluídos.
 
@@ -38,7 +38,7 @@ Próximo passo concreto: iniciar a Sprint 2, frontend Framework7 Vue e página H
 
 ## Pendências das próximas etapas
 
-1. Sprint 2: Vue/Framework7/Hello, fonte Nunito local, versões auxiliares frontend exatas, configuração pública e integração npm no bootstrap. Sprint 4: build e verificações PWA.
+1. Validar a Sprint 2 no Windows/Docker do responsável. Depois: design system na Sprint 3, integração PWA na 4 e push na 5.
 2. Docker/Linux e VPS reais, TLS/certificado, backups/restore, dois clones simultâneos, aparelhos e falhas parciais reais. Simulações dos testes Node não substituem essas evidências.
 3. Definir ferramentas de formatação/lint JS/CSS antes de novas dependências; nesta etapa JS usa check sintático e testes nativos Node, PHP usa Pint. Não adicionar bibliotecas silenciosamente.
 
@@ -131,3 +131,30 @@ Anexo do responsável: 14 testes PHP passaram com 57 assertions, incluindo MySql
 ## Aceite local da Sprint 1 — 2026-11-11
 
 Após receber a correção de orchestration.test.mjs, o responsável confirmou que a suíte Node passou. Somado aos resultados anexados de PHP/MySQL e Pint e à execução real do bootstrap/diagnósticos, fica encerrado o aceite local da Sprint 1. A confirmação final Node foi textual; não foi inventada nova execução pelo agente ou transcrição não fornecida. Próxima etapa: Sprint 2; não iniciada nesta entrega.
+
+
+## Planejamento aprovado de push — 2026-11-12
+
+Atualizado o contrato principal README com as decisões aprovadas: Sprint 2 frontend/Hello, 3 design system, 4 PWA injectManifest desde o início, 5 Push Notifications, 6 testes/fechamento. Incluídos contrato push/VAPID, usuários de teste sem conta fixa em produção e operação sem contêiner adicional; comandos centralizados no guia e estrutura docs/telas preservados. Recurso apenas planejado; não há pacote/migration/worker/API push implementado. SDD e regras específicos de push serão reconciliados na etapa de especificação/implementação correspondente; antes da Sprint 4 não reutilizar a antiga decisão generateSW. Sprint 1 mantém aceite local concluído.
+
+
+README revisado para concisão e integração completa de push: stack/fila/SW, central/ambientes, bootstrap, estrutura, APIs, testes e publicação. Ordem de sprints em lista. Parágrafos técnicos e entregas repetidas compactados, mantendo exemplos/comandos e critérios de implementação. Alteração documental; push continua planejado na Sprint 5.
+
+
+Decisão aprovada: README passa a especificar somente Framework7 (CSS/grid), tokens e CSS compartilhado para estilos. Removidas a dependência de utilitários anterior e todas as suas menções, plugin Vite, arquivo CSS, prefixo/reset e referências. Sem alteração de código ou instalação de dependências nesta entrega. SDD/regras de implementação devem seguir a nova decisão antes de construir a Sprint 2.
+
+
+## Sprint 2 — implementação e evidências — 2026-11-12
+
+- Dependências publicadas conferidas por metadata npm: F7/F7 Vue 9.2.0, Vue 3.5.45, Vite 8.3.4/plugin-vue 6.0.11, Icons 5.0.5, lucide 1.72.0, IMask 7.6.1 e JustValidate 4.3.0. Engines/peers compatíveis com Node 22. Nunito original fornecida pelo responsável, com licença OFL oficial incluída.
+- Frontend: Hello nativa com diagnóstico, grid responsivo, accordion, autocomplete, buttons/dialog, calendar sheet forçado, checkbox, formulário sem envio, smart select, notification/sheet/toast/FAB, 20 Lucide e quatro destinos com ida/volta oficial. Nomes de transição internos têm prefixo f7-. Máscara sincroniza Vue pelo accept; props de transição são passadas em route.options.props; Autocomplete change recebe diretamente a lista de valores do Core 9.2.0.
+- Bootstrap: public config por whitelist em frontend/.foundation.public.json, ignorado no Git; Vite não lê o central privado. Dependências npm no volume real, instalação por lockfile e marcador; reexecução preservada e falha interrompe sem falso sucesso. Não inicia Vite nem altera infra compartilhada. Backend PHP não foi alterado.
+- Node 22.23.4: npm ci limpo pelo lockfile e build Vite passaram. 31 testes Node passaram (27 bootstrap/orquestração e 4 cliente API), incluindo npm idempotente/falha, privacidade e CSRF sem repetição de mutação. Build avisa sobre chunk acima de 500 kB: usa bundle oficial F7 para as demonstrações; aviso não bloqueia compilação e não foi ocultado.
+- DOM simulado com o JavaScript real do build: montagem, 20 SVG Lucide, botões/dialog/FAB, seleção autocomplete e smart select, calendar como sheet, checkbox, sheet/notification/toast, IMask/JustValidate, rotas/retorno com classes nativas das quatro transições, preservação dos campos e descarte do OK ao ficar offline passaram, sem erros JavaScript. Respostas de API nessa verificação são simuladas; não comprovam MySQL ou layout/animação visual em navegador real.
+- Limites: Chromium não iniciou no ambiente de execução por restrição de socket; navegador remoto não acessou o servidor local. Vite foi verificado com host loopback para contornar restrição local de networkInterfaces; arquivo entregue mantém host true/strictPort/polling para Docker. Visual mobile/desktop, HMR no Docker Windows, npm na imagem Alpine e proxy para o Nginx/MySQL do responsável aguardam execução aí. Nenhuma captura de navegador foi salva como entrega.
+- SDD, AGENTS/RULES e guia alinhados à retirada da biblioteca de estilos e ao planejamento injectManifest/push. README permanece especificação independente, sem marcar sprints concluídas. Não implementar ou solicitar permissão push nesta etapa.
+
+
+## Ajuste do FAB — 2026-11-12
+
+O responsável aprovou a Hello e solicitou FAB Speed Dial em vez de dialog. Usados f7-fab-buttons/f7-fab-button oficiais, expansão superior com três ações numeradas e rótulos, ícones +/× nativos; cada ação fecha o menu e mostra toast. Sem CSS ou animação próprios. Build aprovado. DOM simulado com bundle real confirmou abertura/fechamento nativos, três ações com fechamento/toast e ausência de dialog; demais interações continuaram passando, sem erros JavaScript. Conferência visual da expansão no Windows pendente.

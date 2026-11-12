@@ -1,0 +1,20 @@
+@font-face {
+  font-family: Nunito;
+  src: url('/fonts/nunito.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+:root {
+  --app-font-family: Nunito, system-ui, sans-serif;
+  --f7-font-family: var(--app-font-family);
+  --f7-button-font-family: var(--app-font-family);
+  --app-space-1: 4px;
+  --app-space-2: 8px;
+  --app-space-3: 16px;
+  --app-space-4: 24px;
+  --app-space-5: 32px;
+  --app-content-max: 960px;
+  --app-icon-size: 24px;
+  --f7-grid-gap: var(--app-space-3);
+}

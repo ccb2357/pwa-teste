@@ -21,7 +21,14 @@ export function viteCmd(c, d) {
   const flags = `-p ${d.project} --project-directory "${cmdPath(d.directory)}" ${d.internalFiles.map(file => `-f "${cmdPath(file)}"`).join(' ')} --profile dev`;
   return `@echo off\r\nsetlocal DisableDelayedExpansion\r\nif /I "%~1"=="dev" goto dev\r\nif /I "%~1"=="build" goto build\r\necho Use: vite dev ou vite build\r\nexit /b 1\r\n:dev\r\ndocker compose ${flags} run --rm --no-deps --service-ports ${c.nodeService} npm run dev\r\nexit /b %errorlevel%\r\n:build\r\ndocker compose ${flags} run --rm --no-deps ${c.nodeService} npm run build\r\nexit /b %errorlevel%\r\n`;
 }
+export function publicConfiguration(c) {
+  return {
+    app: { name: c.PROJECT_NAME, slug: c.PROJECT_SLUG, locale: c.APP_LOCALE.replace('_', '-'), displayTimezone: c.DISPLAY_TIMEZONE, appUrl: c.appUrl, apiBase: '/api/v1', themeColor: c.PWA_THEME_COLOR },
+    vite: { proxyTarget: c.NGINX_INTERNAL_URL, proxyHost: new URL(c.appUrl).host, devPort: c.DEV_PORT, previewPort: c.PREVIEW_PORT },
+  };
+}
 export async function generate(c, d) {
+  await writeAtomic(path.join(c.frontend, '.foundation.public.json'), JSON.stringify(publicConfiguration(c), null, 2) + '\n');
   const guidePath = path.join(c.root, 'instalacao-pwa-framework.md');
   const guide = await readOptional(guidePath);
   const infraBlock = /<!-- BEGIN FOUNDATION INSTALL INFRA -->[\s\S]*?<!-- END FOUNDATION INSTALL INFRA -->/;
@@ -29,7 +36,7 @@ export async function generate(c, d) {
   await writeAtomic(guidePath, guide.replace(infraBlock, () => installationInfra(c, d)));
   const file = path.join(c.frontend, 'vite.cmd');
   await writeAtomic(file, viteCmd(c, d));
-  const summary = `<!-- BEGIN FOUNDATION IDENTITY -->\n| Campo | Valor |\n| --- | --- |\n| Projeto | ${c.PROJECT_NAME.replaceAll('|', '\\|')} |\n| Slug | ${c.PROJECT_SLUG} |\n| Ambiente | ${c.APP_ENV} |\n| URL | ${c.appUrl} |\n| Dev / preview | ${c.DEV_PORT} / ${c.PREVIEW_PORT} |\n| Serviço / Compose | ${c.nodeService} / ${d.project} |\n| Volumes | ${c.vendorVolume}, ${c.modulesVolume} |\n| Bancos | ${c.DB_DATABASE}, ${c.DB_TEST_DATABASE} |\n| Fundação | 0.1.0-sprint.1 |\n<!-- END FOUNDATION IDENTITY -->`;
+  const summary = `<!-- BEGIN FOUNDATION IDENTITY -->\n| Campo | Valor |\n| --- | --- |\n| Projeto | ${c.PROJECT_NAME.replaceAll('|', '\\|')} |\n| Slug | ${c.PROJECT_SLUG} |\n| Ambiente | ${c.APP_ENV} |\n| URL | ${c.appUrl} |\n| Dev / preview | ${c.DEV_PORT} / ${c.PREVIEW_PORT} |\n| Serviço / Compose | ${c.nodeService} / ${d.project} |\n| Volumes | ${c.vendorVolume}, ${c.modulesVolume} |\n| Bancos | ${c.DB_DATABASE}, ${c.DB_TEST_DATABASE} |\n| Fundação | 0.2.0-sprint.2 |\n<!-- END FOUNDATION IDENTITY -->`;
   const readmePath = path.join(c.root, 'README.md'), readme = await readOptional(readmePath);
   const block = /<!-- BEGIN FOUNDATION IDENTITY -->[\s\S]*?<!-- END FOUNDATION IDENTITY -->/;
   await writeAtomic(readmePath, block.test(readme) ? readme.replace(block, () => summary) : readme.trimEnd() + '\n\n' + summary + '\n');
@@ -45,7 +52,7 @@ export function installationInfra(c, d) {
     '## 3. Preparar serviço Node, mount, volumes e site',
     'Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **' + c.APP_ENV + '** e o projeto **' + c.PROJECT_SLUG + '**. Não duplique entradas que já estejam corretas. Os valores desta entrega estão prontos para pwa-teste local; se o central usar outros nomes, caminhos ou portas, ajuste os trechos para esse ambiente antes de aplicá-los. O bootstrap atualiza este bloco ao conferir o ambiente, preservando o restante do guia.',
     '### 3.1 Serviço Node no Compose existente',
-    'Arquivo de destino: `' + d.mapping.toHost(d.internalFiles[0]) + '`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. O frontend será implementado na Sprint 2; não iniciar o serviço agora.',
+    'Arquivo de destino: `' + d.mapping.toHost(d.internalFiles[0]) + '`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite somente após executar o bootstrap e instalar as dependências, conforme a etapa 7.',
     '```yaml\n' + node + '\n```',
     '### 3.2 Mount vendor no PHP-FPM existente',
     'No mesmo Compose, localizar `services.' + c.PHP_SERVICE + '.volumes` e acrescentar somente a linha abaixo. Preservar os mounts atuais; não criar outro serviço PHP nem substituir sua lista de volumes.',

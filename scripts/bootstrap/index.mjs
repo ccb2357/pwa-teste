@@ -4,6 +4,7 @@ import { args, load, schema } from './lib/config.mjs';
 import { FoundationError, requireThat, httpFailure } from './lib/errors.mjs';
 import { docker, jsonOutput } from './lib/process.mjs';
 import { discover, infraProblems, phpExec, checkPorts } from './lib/docker.mjs';
+import { installFrontend } from './lib/frontend.mjs';
 import { generate, siteApplied } from './lib/templates.mjs';
 import { identity, checkIdentity, hash, readOptional, writeAtomic, synchronizeEnvs } from './lib/files.mjs';
 let lock, stateFile, state;
@@ -17,7 +18,7 @@ try {
   const saved = await readOptional(stateFile, '{}');
   try { state = JSON.parse(saved); } catch { throw new FoundationError('Estado local inválido. Preserve-o para diagnóstico; não reinicialize identidade automaticamente.'); }
   checkIdentity(state, c);
-  state = { ...state, schema, identity: identity(c), release: '0.1.0-sprint.1', completeFoundation: false, startedAt: new Date().toISOString() };
+  state = { ...state, schema, identity: identity(c), release: '0.2.0-sprint.2', completeFoundation: false, startedAt: new Date().toISOString() };
   console.log(`Preparação de ${c.PROJECT_SLUG} (${c.APP_ENV}).`);
   const d = await discover(c);
   if (state.composeProject) requireThat(state.composeProject === d.project, 'Identidade da infraestrutura Compose mudou; revisar explicitamente.');
@@ -69,10 +70,14 @@ try {
   if (verify.code !== 0) throw new FoundationError(httpFailure(verify.stdout));
   const evidence = jsonOutput(verify, 'Verificação HTTP');
   requireThat(evidence.status === 'ok', 'Integração HTTP não foi validada.');
-  state.phase = 'backend-ready'; state.lastExitCode = 0; state.phpVersion = version; state.composerLock = hash(lockfile); state.verifiedAt = new Date().toISOString(); state.checks = evidence.checks;
-  state.pending = ['Frontend/Hello (Sprint 2)', 'PWA/build (Sprint 4)', 'Validações finais de clones/aparelhos/produção (Sprint 5)']; await save();
-  console.log(`Sprint 1: backend inicializado e verificações HTTP concluídas. Abra ${c.appUrl}/status.`);
-  console.log('Fundação completa ainda pendente das próximas sprints; frontend/build não foram declarados prontos.');
+  state.phase = 'frontend-install'; await save();
+  const frontendLock = await installFrontend(c, d);
+  state.frontendLock = frontendLock;
+  state.phase = 'frontend-ready'; state.lastExitCode = 0; state.phpVersion = version; state.composerLock = hash(lockfile); state.verifiedAt = new Date().toISOString(); state.checks = evidence.checks;
+  state.pending = ['Design system (Sprint 3)', 'PWA/build/publicação (Sprint 4)', 'Push Notifications (Sprint 5)', 'Validações finais (Sprint 6)']; await save();
+  console.log(`Sprint 2: backend verificado e dependências frontend preparadas. Status: ${c.appUrl}/status.`);
+  console.log(c.APP_ENV === 'local' ? `Para abrir Hello, execute frontend/vite.cmd dev e acesse http://localhost:${c.DEV_PORT}.` : 'Frontend preparado; publicação PWA pertence à Sprint 4.');
+  console.log('PWA, push, aparelhos e aceite final continuam nas próximas etapas.');
 } catch (error) {
   if (state) { state.phase = error.code === 2 ? 'manual-pending' : 'failed'; state.lastExitCode = error.code === 2 ? 2 : 1; await save().catch(() => {}); }
   console.error(error instanceof FoundationError ? error.message : 'Bootstrap interrompido. Confira configuração, caminhos e acesso aos arquivos; detalhes privados não são exibidos.');

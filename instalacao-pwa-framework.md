@@ -46,7 +46,7 @@ Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o a
 
 ### 3.1 Serviço Node no Compose existente
 
-Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. O frontend será implementado na Sprint 2; não iniciar o serviço agora.
+Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviço ao `services` existente, sem duplicar essa chave. Inicie o Vite após executar o bootstrap, conforme a etapa 7.
 
 ```yaml
 services:
@@ -139,7 +139,7 @@ Valide o Nginx e recarregue somente se a validação passar:
 docker compose exec -T nginx nginx -t && docker compose exec -T nginx nginx -s reload
 ```
 
-Não execute `down -v` nem inicie todo o perfil dev. O serviço Node deve estar declarado, mas não precisa estar rodando nesta sprint.
+Não execute `down -v` nem inicie todo o perfil dev. O bootstrap prepara as dependências; o Vite será iniciado na etapa 7.
 
 ## 5. Executar o bootstrap
 
@@ -154,14 +154,34 @@ O código esperado ao concluir esta etapa é **0**. Se retornar **2**, ainda exi
 
 ## 6. Conferir o resultado
 
-O bootstrap verifica as dependências, a configuração, os bancos, as migrations e a comunicação com o backend. Se terminar com código **0**, o backend da Sprint 1 está pronto. Confira:
+O bootstrap verifica as dependências, a configuração, os bancos, as migrations e a comunicação com o backend. Se terminar com código **0**, o backend foi verificado e as dependências frontend foram preparadas. Confira:
 
 - [Status do backend e banco](http://pwa-teste.localhost/status)
 - [Mesmo diagnóstico em JSON](http://pwa-teste.localhost/api/v1/status)
 - [Verificação básica do Laravel](http://pwa-teste.localhost/up)
 
-Esse resultado ainda não confirma o funcionamento do frontend e da PWA nem a conclusão da fundação.
+Abra a Hello na etapa 7. PWA, push e publicação continuam nas etapas próprias.
 
+
+## 7. Abrir Hello
+
+No CMD:
+
+```cmd
+cd /d C:\var\www\pwa-teste\frontend
+vite.cmd dev
+```
+
+Abra [http://localhost:5176](http://localhost:5176). Mantenha esse terminal aberto; encerre com Ctrl+C. Alterações em .vue/JS/CSS devem aparecer pelo HMR.
+
+Confira o status real, autocomplete, calendário em sheet, formulário/máscara, seletores, feedback, 20 ícones e as quatro transições com retorno. O formulário não grava dados. PWA/offline/push ainda não estão ativos.
+
+Para conferir a compilação:
+
+```cmd
+cd /d C:\var\www\pwa-teste\frontend
+vite.cmd build
+```
 
 ## Verificações e testes
 
@@ -187,6 +207,12 @@ Testes do bootstrap:
 
 ```cmd
 docker compose run --rm --entrypoint node pwa-foundation-bootstrap --test /var/www/pwa-teste/scripts/bootstrap/tests/contracts.test.mjs /var/www/pwa-teste/scripts/bootstrap/tests/orchestration.test.mjs
+```
+
+Testes do cliente API frontend, na pasta infra:
+
+```cmd
+docker compose --profile dev run --rm --no-deps pwa-teste-node npm test
 ```
 
 Esperado: todos os testes passando e nenhuma falha de formatação.

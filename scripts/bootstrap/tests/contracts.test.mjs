@@ -6,7 +6,7 @@ import path from 'node:path';
 import { parseCentral, validate, args, contained } from '../lib/config.mjs';
 import { mapPath, mappedPaths, infraProblems, sameHost } from '../lib/docker.mjs';
 import { managedEnv, appKey, checkIdentity, identity, writeAtomic } from '../lib/files.mjs';
-import { composeSnippet, nginxSnippet, siteApplied, viteCmd } from '../lib/templates.mjs';
+import { composeSnippet, nginxSnippet, siteApplied, viteCmd, publicConfiguration } from '../lib/templates.mjs';
 import { run } from '../lib/process.mjs';
 import { httpFailure } from '../lib/errors.mjs';
 const raw = await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8');
@@ -130,4 +130,12 @@ test('atomic writes avoid unnecessary replacement', async () => {
   const folder = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-write-'));
   try { assert.equal(await writeAtomic(folder + '/x', 'value'), true); assert.equal(await writeAtomic(folder + '/x', 'value'), false); }
   finally { await fs.rm(folder, { recursive: true, force: true }); }
+});
+
+test('public config excludes credentials and keeps proxy details out of the browser app fields', () => {
+  const output = publicConfiguration(config({ DB_PASSWORD: 'PRIVATE-DATABASE' }));
+  assert.doesNotMatch(JSON.stringify(output), /PRIVATE-DATABASE|DB_USERNAME|DB_PASSWORD/);
+  assert.equal(output.app.apiBase, '/api/v1');
+  assert.equal(output.app.locale, 'pt-BR');
+  assert.equal(output.app.proxyTarget, undefined);
 });

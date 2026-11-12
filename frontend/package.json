@@ -1,0 +1,28 @@
+{
+  "name": "pwa-framework-frontend",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12 <23"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/unit/*.test.mjs"
+  },
+  "dependencies": {
+    "framework7": "9.2.0",
+    "framework7-vue": "9.2.0",
+    "vue": "3.5.45",
+    "framework7-icons": "5.0.5",
+    "lucide": "1.72.0",
+    "imask": "7.6.1",
+    "just-validate": "4.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.11",
+    "vite": "8.3.4"
+  }
+}

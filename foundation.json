@@ -1,6 +1,6 @@
 {
-  "foundationVersion": "0.1.0-sprint.1",
-  "stage": "backend",
+  "foundationVersion": "0.2.0-sprint.2",
+  "stage": "frontend",
   "completeFoundation": false,
   "skeleton": {
     "package": "laravel/laravel",
@@ -13,5 +13,16 @@
     "compose": "2.40.3",
     "node": "22-alpine",
     "dotenv": "16.6.1"
+  },
+  "frontend": {
+    "framework7": "9.2.0",
+    "framework7-vue": "9.2.0",
+    "vue": "3.5.45",
+    "framework7-icons": "5.0.5",
+    "lucide": "1.72.0",
+    "imask": "7.6.1",
+    "just-validate": "4.3.0",
+    "@vitejs/plugin-vue": "6.0.11",
+    "vite": "8.3.4"
   }
 }

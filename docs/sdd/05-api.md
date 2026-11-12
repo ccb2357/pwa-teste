@@ -21,3 +21,7 @@ Instantes ISO 8601 com fuso explícito, preferencialmente UTC; datas civis YYYY-
 Referência oficial: https://laravel.com/docs/12.x/sanctum
 
 Os diagnósticos usam respostas diretas sem resolver o factory de resposta/Redirector, que pode instanciar sessão em banco indiretamente. Cache-Control efetivo inclui no-store e pode incluir private do Symfony. /sanctum/csrf-cookie retorna 204 e cookies host-only; não constitui implementação de login.
+
+## Cliente frontend
+
+services/api.js envia credentials include e cache no-store, exige JSON e não converte erro/503 em sucesso. Mutações futuras obtêm /sanctum/csrf-cookie e enviam X-XSRF-TOKEN decodificado do cookie; sem token, bloqueiam envio. Não repetir POST automaticamente após 419. Status atual usa apenas GET /api/v1/status. Hello não grava informações; APIs push são escopo futuro da Sprint 5.

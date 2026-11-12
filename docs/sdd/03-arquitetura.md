@@ -1,6 +1,6 @@
 # Arquitetura
 
-Frontend independente em frontend/, Laravel em backend/, infraestrutura única externa em ../infra/. Stack e versões aprovadas na seção 1 do [README](../../README.md). Manifests e lockfiles fixarão versões exatas após validação.
+Frontend independente em frontend/, Laravel em backend/, infraestrutura única externa em ../infra/. Stack e versões aprovadas na seção 1 do [README](../../README.md). Versões frontend verificadas e fixadas em package.json/package-lock.json; metadados em foundation.json.
 
 Frontend: main.js registra Framework7Vue, componentes usados e CSS global; App.vue contém f7-app/view principal; routes.js associa rotas a pages/*.vue. Composition API/script setup JavaScript. Sem Vue Router nem aplicação Core paralela. APIs Core somente quando necessárias e integradas ao ciclo de vida Vue/Framework7.
 
@@ -12,7 +12,7 @@ Sessão Laravel/Sanctum com cookies e CSRF, host-only por padrão compatível co
 
 Dados: migrations iniciais oficiais Laravel; banco principal e banco testing separados, mesma conta existente. Nenhuma entidade de negócio adicional. Banco testing deve ser validado contra a configuração efetiva antes de operações destrutivas; produção bloqueia essas operações.
 
-PWA via vite-plugin-pwa/Workbox generateSW, virtual:pwa-register, registerType prompt, desativado em dev. Cache público só para shell/recursos estáticos, nunca API/sessão/CSRF/status. Atualização detectada automaticamente, aplicada em momento seguro com tratamento de formulário alterado e múltiplas abas.
+PWA planejada para Sprint 4 via vite-plugin-pwa/Workbox injectManifest e fonte sw.js única, virtual:pwa-register, registerType prompt, desativado em dev. Cache público só para shell/recursos estáticos, nunca API/sessão/CSRF/status. Atualização detectada automaticamente, aplicada em momento seguro com tratamento de formulário alterado e múltiplas abas.
 
 Bootstrap é Node ES modules, Docker CLI/Compose no executor temporário e socket do Engine existente. Sem Docker-in-Docker, shell de host ou dependência do node_modules do aplicativo. Contrato, derivações e mapeamento em [04-ambiente.md](04-ambiente.md).
 
@@ -24,4 +24,12 @@ AppSync é o comando próprio; TestingDatabaseGuard protege a conexão de testes
 
 Bootstrap: executor/ contém entrypoint e dependências isoladas; lib/config.mjs valida o central e deriva nomes; docker.mjs descobre recursos/mapeia paths e verifica infraestrutura; files.mjs gerencia env/chaves/estado; templates.mjs gera saídas; process.mjs executa sem shell e sem expor saída privada. php/ contém preparação de bancos, permissões e verificações de configuração/HTTP dentro do runtime PHP-FPM.
 
-Metadados da fundação/skeleton ficam em foundation.json. composer.lock é a referência de dependências efetivas; executor/package-lock.json fixa o parser separado. O frontend mantém seu próprio lockfile quando for implementado.
+Metadados da fundação/skeleton ficam em foundation.json. composer.lock é a referência de dependências efetivas; executor/package-lock.json fixa o parser separado. O frontend mantém seu próprio package-lock.json.
+
+## Frontend e instalação de dependências
+
+Vite lê somente .foundation.public.json gerado pelo bootstrap; define uma whitelist de nome/slug/locale/fuso/URL/apiBase/cor do manifest no bundle. Configuração do proxy é consumida apenas pelo Vite. Tokens não vêm do central. api.js concentra credenciais/CSRF e erros, não repete mutações após 419. O formulário Hello não usa a API de gravação.
+
+frontend.mjs usa contêiner Node temporário no Engine, bind host mapeado e volume exclusivo node_modules, sem Compose mutável dentro do executor. npm ci --include=dev usa lockfile; marcador real no volume combina hashes de manifest/lock e modo Node 22. Reexecução com dependências presentes/inalteradas não reinstala. Erro de npm interrompe com estado failed; não marca conclusão parcial. O bootstrap prepara frontend, mas não sobe servidor Vite nem publica dist.
+
+Web Push é contrato da Sprint 5: serviço central Laravel, VAPID privada por ambiente, fila database, APIs autenticadas e integração ao mesmo worker. Nenhuma API, worker, permissão ou chave push é criada na Sprint 2.

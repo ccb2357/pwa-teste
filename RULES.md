@@ -2,7 +2,7 @@
 
 1. **NÃO ADIVINHAR O FUNCIONAMENTO DA STACK. Ao menor sinal de dúvida sobre qualquer ferramenta, SEMPRE consultar sua documentação oficial antes de escrever código ou responder.**
 2. Cumprir a stack e versões aprovadas no README; verificar exports, engines e peerDependencies. Apresentar incompatibilidades antes de substituir tecnologias ou acrescentar bibliotecas.
-3. Toda tela e todo componente seguem [o design system](docs/sdd/02-design-system.md). Framework7 Vue fornece controles e navegação; Tailwind organiza layouts sem Preflight, com prefixo tw. Usar Nunito local e ícones oficiais/Lucide. Novas telas e alterações globais seguem aprovação visual; Hello nativa já está autorizada.
+3. Toda tela e todo componente seguem [o design system](docs/sdd/02-design-system.md). Framework7 Vue fornece controles, navegação e grid responsivo; tokens e CSS compartilhado definem os layouts. Usar Nunito local e ícones oficiais/Lucide. Novas telas e alterações globais seguem aprovação visual; Hello nativa já está autorizada.
 4. Usar JavaScript, SFC/Composition API/script setup, roteador Framework7 Vue e branch master. Não adicionar React, TypeScript ou Vue Router.
 5. Docker executa PHP/Composer e Node/npm. Reutilizar Compose, rede, Nginx, PHP-FPM e MySQL existentes. Não criar uma segunda pilha nem iniciar indiscriminadamente o perfil dev. Mudanças na infraestrutura são preparadas para aplicação manual.
 6. Centralizar valores compartilhados em .env.foundation privado. Versionar o exemplo, não valores reais, APP_KEY, estado ou arquivos derivados privados. Não pedir senhas no chat. Nunca publicar configurações centrais completas.

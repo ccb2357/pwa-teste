@@ -122,3 +122,11 @@ A conferência efetiva bloqueia valores herdados ou conexão URL/socket/read-wri
 A suíte completa PHP inclui o grupo mysql, com consulta real, diagnóstico saudável, app:sync duas vezes no banco testing e falha de conexão restrita ao processo. TestingDatabaseGuard exige APP_ENV=testing, central local e MySQL com servidor/porta e DB_TEST_DATABASE esperados, distinto do principal, sem URL/socket/read-write alternativos; valida antes de traits como RefreshDatabase. O grupo mysql pode ser excluído com --exclude-group=mysql para contratos determinísticos, mantendo o guard de isolamento. Não executar testes destrutivos em produção. Testes Node de Engine/Compose são simulações e não comprovam integração real com Docker ou VPS. Resultados e limites das verificações são registrados em MEMORY.md. Comandos operacionais ficam no guia da raiz.
 
 Os subprocessos dos testes de orquestração preservam FOUNDATION_RUNTIME_PACKAGE do executor, que aponta para /opt/foundation/package.json; o fallback executor/package.json local só é usado quando a variável não existe. A suíte não exige node_modules no bind do projeto quando executada pela imagem.
+
+## Frontend da Sprint 2
+
+Node 22 (>=22.12 <23), Vite 8.3.4, plugin-vue 6.0.11, Vue 3.5.45, framework7/framework7-vue 9.2.0, framework7-icons 5.0.5, lucide 1.72.0, IMask 7.6.1 e JustValidate 4.3.0. Engines/peers conferidos no registry dos pacotes. CSS exportado por framework7/css/bundle, sem sufixo .css nessa versão; ler exports da versão fixada. Sem dependência de biblioteca adicional de estilos.
+
+frontend/.foundation.public.json é gerado por ambiente e ignorado no Git. O Vite exige esse arquivo, gera título/locale e proxy API/Sanctum/up → Nginx com Host do domínio central. Servidor interno 5173, strictPort, host true, polling 300ms; publicação no host usa DEV_PORT (5176). frontend/vite.cmd resolve Compose/serviço/caminhos reais. Nenhuma alteração do site Nginx para dist antes da Sprint 4. Build disponível para checagem da compilação; não prova PWA instalada.
+
+Estado frontend-ready significa backend verificado e dependências npm preparadas; ainda exige iniciar Vite e validar Hello no Windows. Comandos no guia da raiz. Fila/push dependem da Sprint 5; não alterar QUEUE_CONNECTION ou gerar VAPID nesta etapa.

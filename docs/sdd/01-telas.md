@@ -18,7 +18,7 @@ Exibir mensagem de boas-vindas, nome do projeto vindo da configuração central,
 | Calendar | Calendário oficial aberto como sheet de baixo para cima, inclusive em desktop; não substituir por modal central ou datepicker do navegador. |
 | Checkbox | Controle oficial com estado reativo. |
 | Dialog | Diálogo modal oficial com abertura, confirmação/cancelamento e fechamento. |
-| FAB | Floating Action Button oficial com ação demonstrativa. |
+| FAB | Speed Dial oficial: expande três ações para cima, alterna +/× e fecha ao selecionar uma ação, com confirmação por toast. |
 | Ícones Lucide | Seção com aproximadamente 20 ícones Lucide distintos, identificados; não usar Framework7 Icons nessa seção. |
 | Notifications | Notificações oficiais com abertura e fechamento. |
 | Sheet Modal | Sheet oficial com abertura e fechamento, além da demonstração do calendário. |
@@ -30,14 +30,14 @@ Usar os componentes oficiais Framework7 Vue quando disponíveis e APIs Core docu
 
 O status da API/banco deve vir de /api/v1/status e mostrar carregamento, sucesso, erro, indisponibilidade ou não verificado. Offline ou falha de requisição não podem manter um OK antigo como se fosse uma checagem atual. Não consultar MySQL diretamente pelo navegador nem expor credenciais. As demonstrações usam dados locais de exemplo; sua interação não comprova persistência.
 
-Reservar na mesma página os estados de instalação, preparo offline e atualização da PWA, cuja integração funcional pertence à Sprint 4; na Sprint 2 não declarar esses recursos concluídos. Documentar Hello e página auxiliar em 01-telas.md, padrões/componentes em 02-design-system.md e comandos/URL em 04-ambiente.md.
+Reservar na mesma página os estados de instalação, preparo offline e atualização da PWA, cuja integração funcional pertence à Sprint 4; na Sprint 2 não declarar esses recursos concluídos. Documentar Hello e página auxiliar em 01-telas.md, padrões/componentes em 02-design-system.md e comandos/URL em instalacao-pwa-framework.md.
 
 **Aceite da Sprint 2:** Hello acessível pelo Vite no Windows; HMR .vue/JS/CSS operacional; status real pelo proxy; todas as demonstrações da tabela funcionam, incluindo seleção de sugestões, calendário subindo como sheet, os quatro exemplos de transição com retorno, formulário, máscara e validação. Nenhum controle equivalente é recriado fora das APIs oficiais; não há persistência nas demonstrações. Instalação/offline/atualização permanecem explicitamente pendentes para a Sprint 4.
 
 
 ## Destino de transição
 
-Página auxiliar Vue simples, rota documentada na implementação, com retorno nativo. Hello oferece avanço e retorno reais em cover-v, dive, fade e parallax. Respeitar redução de movimento, sem animações substitutas.
+Arquivo frontend/src/pages/transition.vue. Rotas /transition/cover-v/, /transition/dive/, /transition/fade/ e /transition/parallax/, com retorno nativo e opções de transição do roteador. Hello oferece avanço e retorno reais em cover-v, dive, fade e parallax. Respeitar redução de movimento, sem animações substitutas.
 
 ## Status técnico Laravel
 
@@ -46,3 +46,11 @@ GET /status, HTML independente do Vite. Mostra Backend OK e Banco OK somente ap�
 ## Critérios comuns
 
 Carregamento/sucesso/falha explícitos; offline nunca indica banco saudável sem resposta atual. Rótulos acessíveis, erros associados, foco visível e devolvido após diálogos, teclado, contraste e redução de movimento. Referência WCAG 2.2 AA. Fluxos de negócio futuros precisam de aprovação visual antes de implementar. Referências reais ficam em ../telas/; não criar aprovação fictícia.
+
+## Contrato implementado do frontend
+
+Título/nome vêm da configuração pública gerada. BackendStatus faz GET fresco com credentials include e cache no-store; estados carregando/OK/503/falha/offline/não verificado, cancelamento/timeout e descarte de respostas antigas. Eventos offline limpam o OK anterior; online consulta novamente. Formulário apenas confirma, não transmite dados; celular brasileiro com DDD e 11 dígitos. Inputs Vue mantêm o valor formatado da máscara. Autocomplete local: Blumenau, Florianópolis, Balneário Camboriú, Curitiba, São Paulo e Rio de Janeiro. Calendar usa openIn=sheet em todas as larguras; Smart Select usa popup. Hello mantém seu estado ao visitar as páginas auxiliares. APIs Core/máscaras/validadores são destruídos ao remover a página. Movimento reduzido desativa animação da navegação.
+
+Instalação/offline/atualização aparecem como pendentes da Sprint 4; Web Push permanece na Sprint 5 e não é confundido com notification interna.
+
+Os nomes exibidos cover-v/dive/fade/parallax correspondem aos identificadores nativos f7-cover-v/f7-dive/f7-fade/f7-parallax nas opções do roteador, preservando avanço e retorno oficiais.
