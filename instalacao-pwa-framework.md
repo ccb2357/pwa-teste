@@ -301,7 +301,11 @@ $resultado = app(\App\Services\PushNotificationService::class)->sendToUser($usua
 
 O serviço enfileira para os dispositivos inscritos com preferência ativa; `$resultado['queued']` informa a quantidade enfileirada. O worker descrito acima processa os envios; enfileirar não confirma recebimento.
 
-Referências: [docs/sdd/03-arquitetura.md](docs/sdd/03-arquitetura.md) — serviço central, fila e gatilhos; [docs/sdd/05-api.md](docs/sdd/05-api.md) — campos, limites e contratos; [instalacao-pwa-framework.md](instalacao-pwa-framework.md#push-notifications-opcional) — configuração, teste e operação.
+Referências:
+
+- [docs/sdd/03-arquitetura.md](docs/sdd/03-arquitetura.md) — serviço central, fila e gatilhos.
+- [docs/sdd/05-api.md](docs/sdd/05-api.md) — campos, limites e contratos.
+- [instalacao-pwa-framework.md](instalacao-pwa-framework.md#push-notifications-opcional) — configuração, teste e operação.
 
 ## Verificações e testes
 
