@@ -261,6 +261,8 @@ cd /d C:\var\www\infra
 docker compose exec -T -w /var/www/meu-projeto/backend php-fpm php artisan push:test-user teste-push@example.test
 ```
 
+`teste-push@example.test` identifica apenas o usuário de teste no banco; pode manter esse exemplo. Não precisa ser igual ao e-mail do `VAPID_SUBJECT` e não recebe e-mails.
+
 4. Abra a Hello pelo build (Nginx ou prévia 5177/ADB). Se aparecer Atualizar aplicativo, aplique a atualização. Na seção Push Notifications, cole o código exibido no terminal e entre; ele vale 10 minutos e só pode ser usado uma vez. Clique **Ativar neste dispositivo** e permita notificações.
 
 5. Clique **Enviar teste para este dispositivo**. Depois, no CMD:
