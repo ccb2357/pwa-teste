@@ -32,7 +32,7 @@ Para testar a migração sem reutilizar cache, acrescente `--no-cache` ao build 
 
 O executor usa docker run --rm (etapas 2 e 5); não cadastrar serviço de bootstrap no Compose.
 
-Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **local** e o projeto **pwa-teste**. Não duplique entradas que já estejam corretas. Os trechos abaixo refletem a configuração central e o mapeamento deste ambiente; confira-os antes de aplicar. O restante do guia usa exemplos, que devem ser adaptados ao projeto.
+Antes de executar o bootstrap, aplique **todos os quatro itens** abaixo para o ambiente **local** e o projeto **meu-projeto**. Não duplique entradas que já estejam corretas. Os trechos abaixo refletem a configuração central e o mapeamento deste ambiente; confira-os antes de aplicar. O restante do guia usa exemplos, que devem ser adaptados ao projeto.
 
 ### 3.1 Serviço Node no Compose existente
 
@@ -40,14 +40,14 @@ Arquivo de destino: `C:\var\www\infra\docker-compose.yml`. Acrescentar o serviç
 
 ```yaml
 services:
-    pwa-teste-node:
+    meu-projeto-node:
         image: node:22-alpine
         working_dir: /app
         volumes:
             - type: bind
-              source: "C:\\var\\www\\pwa-teste\\frontend"
+              source: "C:\\var\\www\\meu-projeto\\frontend"
               target: /app
-            - pwa_teste_node_modules:/app/node_modules
+            - meu_projeto_node_modules:/app/node_modules
         ports:
             - "127.0.0.1:5176:5173"
         networks:
@@ -61,7 +61,7 @@ services:
 No mesmo Compose, localizar `services.php-fpm.volumes` e acrescentar somente a linha abaixo. Preservar os mounts atuais; não criar outro serviço PHP nem substituir sua lista de volumes.
 
 ```yaml
-- pwa_teste_vendor:/var/www/pwa-teste/backend/vendor
+- meu_projeto_vendor:/var/www/meu-projeto/backend/vendor
 ```
 
 ### 3.3 Declaração dos volumes ao final do Compose
@@ -70,10 +70,10 @@ No mesmo arquivo, mesclar estas declarações no bloco `volumes` de nível raiz,
 
 ```yaml
 volumes:
-    pwa_teste_vendor:
-        name: pwa_teste_vendor
-    pwa_teste_node_modules:
-        name: pwa_teste_node_modules
+    meu_projeto_vendor:
+        name: meu_projeto_vendor
+    meu_projeto_node_modules:
+        name: meu_projeto_node_modules
 ```
 
 ### 3.4 Site Nginx
@@ -81,11 +81,11 @@ volumes:
 No arquivo de sites ativo do Nginx, acrescentar o bloco abaixo preservando os outros sites. Nesta infraestrutura local, o destino é `C:\var\www\infra\nginx\sites_local.conf`. Em produção, usar o arquivo realmente montado e conferir os certificados. O root é `frontend/dist`; somente as rotas técnicas são encaminhadas ao Laravel. Substitua o bloco anterior deste projeto, sem duplicar o server_name.
 
 ```nginx
-# PWA FOUNDATION: pwa-teste — PWA Sprint 4
+# PWA FOUNDATION: meu-projeto — PWA Sprint 4
 server {
     listen 80;
-    server_name pwa-teste.localhost;
-    root "/var/www/pwa-teste/frontend/dist";
+    server_name meu-projeto.localhost;
+    root "/var/www/meu-projeto/frontend/dist";
     index index.html;
     charset utf-8;
     add_header Cache-Control "no-cache" always;
@@ -100,8 +100,8 @@ server {
         internal;
         include fastcgi_params;
         fastcgi_pass php-fpm:9000;
-        fastcgi_param SCRIPT_FILENAME "/var/www/pwa-teste/backend/public/index.php";
-        fastcgi_param DOCUMENT_ROOT "/var/www/pwa-teste/backend/public";
+        fastcgi_param SCRIPT_FILENAME "/var/www/meu-projeto/backend/public/index.php";
+        fastcgi_param DOCUMENT_ROOT "/var/www/meu-projeto/backend/public";
         
         add_header Cache-Control "no-store" always;
     }
@@ -123,7 +123,7 @@ cd /d C:\var\www\infra
 docker compose --profile dev config --quiet
 ```
 
-A validação `config --quiet` não mostra nada quando está correta. Se os mounts já estiverem aplicados, não recrie PHP-FPM. Nesta atualização, substitua o bloco deste projeto pelo da etapa 3.4 e valide/recarregue o Nginx.
+A validação `config --quiet` não mostra nada quando está correta. Se os mounts já estiverem aplicados, não recrie PHP-FPM. Se o site já corresponder à etapa 3.4, preserve-o; valide/recarregue somente após mudanças.
 
 Recrie somente o PHP-FPM para aplicar o mount vendor. Isso interrompe brevemente os sites PHP compartilhados; não é necessário reconstruir a imagem PHP.
 
@@ -166,7 +166,7 @@ O bootstrap verifica as dependências, a configuração, os bancos, as migration
 - [Mesmo diagnóstico em JSON](http://meu-projeto.localhost/api/v1/status)
 - [Verificação básica do Laravel](http://meu-projeto.localhost/up)
 
-Com o Vite parado, abra a Hello pelo domínio do projeto. Teste instalação pelo botão/menu, offline após o primeiro carregamento e retorno da conexão. API/banco não podem manter OK offline. Código 0 não comprova instalação nem funcionamento em aparelho; push fica na próxima etapa.
+Com o Vite parado, abra a Hello pelo domínio do projeto. Teste instalação pelo botão/menu, offline após o primeiro carregamento e retorno da conexão. API/banco não podem manter OK offline. Código 0 não comprova instalação, funcionamento em aparelho ou recebimento push.
 
 
 ## 7. Desenvolvimento com Vite (opcional)
@@ -180,7 +180,7 @@ vite.cmd dev
 
 Abra [http://localhost:5176](http://localhost:5176). Mantenha esse terminal aberto; encerre com Ctrl+C. Alterações em .vue/JS/CSS devem aparecer pelo HMR.
 
-Esse endereço usa HMR e não registra o service worker. Teste a PWA pelo domínio Nginx ou pela prévia abaixo. Push ainda não está ativo.
+Esse endereço usa HMR e não registra o service worker. Teste a PWA pelo domínio Nginx ou pela prévia abaixo. Push funciona somente no build.
 
 Para refazer o build e publicar em dist:
 
@@ -235,6 +235,52 @@ Após atualizar o pacote, mantenha o Vite aberto e recarregue a Hello. Sem mudan
 
 Confira no celular/desktop: grid e página auxiliar, fonte/ícones, formulário vazio/inválido/válido e retorno das transições. Com Tab/Enter/Espaço/Escape, confira foco, botões, campos e FAB. O status deve mostrar carregamento e nunca manter OK ao ficar offline.
 
+## Push Notifications (opcional)
+
+1. No `.env.foundation`, acrescente/confira os campos abaixo. O `VAPID_SUBJECT` é obrigatório com push habilitado por exigência da configuração VAPID. O e-mail serve apenas como contato técnico: não envia nem recebe alertas automáticos e não aparece nas notificações. Informe um e-mail válido ou substitua por uma URL HTTPS sua. Deixe as duas chaves vazias **somente na primeira configuração**; preserve as já existentes.
+
+```dotenv
+PUSH_ENABLED=true
+VAPID_SUBJECT=mailto:seu-email@seu-dominio.com
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+PUSH_TEST_AUTH_ENABLED=true
+```
+
+`PUSH_TEST_AUTH_ENABLED=true` é exclusivo de testes locais. Em produção, mantenha `false` e use a autenticação do produto. Para não usar push, mantenha `PUSH_ENABLED=false`.
+
+2. Execute novamente o bootstrap da etapa 5. Ele instala as dependências PHP, prepara as tabelas, gera/preserva VAPID e publica o build. Não exige novo serviço Compose nem reconstrução do executor. Mantenha `.env.foundation` privado e não apague VAPID/APP_KEY nas atualizações.
+
+3. No CMD, crie o acesso de teste local:
+
+```cmd
+cd /d C:\var\www\infra
+```
+
+```cmd
+docker compose exec -T -w /var/www/meu-projeto/backend php-fpm php artisan push:test-user teste-push@example.test
+```
+
+4. Abra a Hello pelo build (Nginx ou prévia 5177/ADB). Se aparecer Atualizar aplicativo, aplique a atualização. Na seção Push Notifications, cole o código exibido no terminal e entre; ele vale 10 minutos e só pode ser usado uma vez. Clique **Ativar neste dispositivo** e permita notificações.
+
+5. Clique **Enviar teste para este dispositivo**. Depois, no CMD:
+
+```cmd
+docker compose exec -T -w /var/www/meu-projeto/backend php-fpm php artisan push:work
+```
+
+Confira a notificação e o clique de retorno ao app. Repita com o app fechado, mantendo navegador/SO autorizados. **Enfileirada** aguarda o worker; **aceita pelo provedor** ainda não comprova exibição. Se houver retentativa, aguarde e execute o worker novamente.
+
+6. Confira preferência global desligada, desativação/revogação do dispositivo e saída da conta. Imagens dependem do navegador. iPhone/iPad exige PWA instalada e aberta pela Tela de Início; fora de localhost, use HTTPS. O código de acesso não é salvo: conclua o login ou limpe o campo antes de atualizar a PWA.
+
+Em VPS, agende o worker no Cron a cada minuto, adaptando os caminhos/serviço existentes:
+
+```cron
+* * * * * cd /var/www/infra && docker compose exec -T -w /var/www/meu-projeto/backend php-fpm php artisan push:work >/dev/null 2>&1
+```
+
+O usuário do Cron precisa acessar Docker. O comando tem lock e tempo limitado; não substitui a autenticação do produto. Desligue `PUSH_TEST_AUTH_ENABLED` e repita o bootstrap ao terminar os testes locais.
+
 ## Verificações e testes
 
 No CMD, execute um comando por vez. Os testes usam o banco exclusivo de testes.
@@ -261,7 +307,7 @@ Testes do bootstrap:
 docker run --rm --workdir /var/www/infra --mount "type=bind,source=C:\var\www,target=/var/www" --entrypoint node pwa-foundation-bootstrap:0.1.0 --test /var/www/meu-projeto/scripts/bootstrap/tests/contracts.test.mjs /var/www/meu-projeto/scripts/bootstrap/tests/orchestration.test.mjs
 ```
 
-Testes do cliente API frontend, na pasta infra:
+Testes do frontend, na pasta infra:
 
 ```cmd
 docker compose --profile dev run --rm --no-deps meu-projeto-node npm test

@@ -131,7 +131,7 @@ Node 22 (>=22.12 <23), Vite 8.3.4, plugin-vue 6.0.11, Vue 3.5.45, framework7/fra
 
 frontend/.foundation.public.json é gerado por ambiente e ignorado no Git. O Vite exige esse arquivo, gera título/locale e proxy API/Sanctum/up → Nginx com Host do domínio central. Servidor interno 5173, strictPort, host true, polling 300ms; publicação no host usa DEV_PORT (5176). frontend/vite.cmd resolve Compose/serviço/caminhos reais. Site Nginx serve frontend/dist e encaminha rotas técnicas para Laravel. Build verificado não prova instalação em aparelho.
 
-Estado pwa-ready significa backend, build e HTTP no Nginx verificados; instalação/offline/atualização em navegador são aceites separados. Comandos no guia da raiz. Fila/push dependem da Sprint 5; não alterar QUEUE_CONNECTION ou gerar VAPID nesta etapa.
+Estado pwa-ready significa backend, build e HTTP no Nginx verificados; instalação/offline/atualização em navegador são aceites separados. Comandos no guia da raiz. Fila push usa QUEUE_CONNECTION=database; o código 0 não comprova consumo da fila ou entrega ao aparelho.
 
 
 ## Build e PWA
@@ -146,6 +146,15 @@ npm run build usa .dist-build, verifica HTML/manifest/ícones/SW/precache/entrad
 
 Nginx: root frontend/dist; /api, /sanctum, /up e /status reescrevem internamente para backend/public/index.php, sem fallback SPA. PHP direto externo bloqueado; dotfiles negados. HTML/manifest/worker sem immutable; /assets com hashes e cache longo; arquivo de asset ausente retorna 404. verify-http.php confere backend/CSRF; verify-pwa.php valida build servido, manifest/SW/offline, cabeçalhos e 404 técnico sem HTML SPA. Produção usa URL HTTPS pública e certificado validado. Configurações reais devem ser enviadas pelo responsável antes da análise/aplicação compartilhada.
 
-Bootstrap retorna 2 se o site anterior não corresponder ao bloco PWA. Não aplica infraestrutura automaticamente. Após aplicação manual, instala npm pelo lock, compila e valida artefatos/HTTP; falha interrompe e não marca pwa-ready. Não gera usuário, VAPID ou fila push. Executor continua temporário por docker run --rm, sem rebuild da sua imagem para atualizar scripts montados.
+Bootstrap retorna 2 se o site anterior não corresponder ao bloco PWA. Não aplica infraestrutura automaticamente. Após aplicação manual, instala npm pelo lock, compila e valida artefatos/HTTP; falha interrompe e não marca pwa-ready. Não cria usuário nem envia notificações; prepara VAPID e tabelas push conforme o central. Executor continua temporário por docker run --rm, sem rebuild da sua imagem para atualizar scripts montados.
 
 Prévia opcional: Vite preview em 4173 interno, publicação explícita PREVIEW_PORT (exemplo 5177), sem --service-ports. Proxy técnico usa o Nginx/Host configurados. USB ADB encaminha a porta do Windows; não comprova HTTP. Nginx sem Vite é obrigatório no aceite; prévia não substitui produção. HTTPS fora de localhost; instalação e suporte variam por navegador/aparelho.
+
+## Configuração e operação push
+
+PUSH_ENABLED=false e PUSH_TEST_AUTH_ENABLED=false por padrão. VAPID_SUBJECT é contato real mailto:/HTTPS; VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY pertencem ao aplicativo/ambiente. O bootstrap instala pelo composer.lock, valida/gera o par pelo PHP e grava somente essas linhas no central privado. Par válido é preservado; parcial, inválido ou incompatível com o subject interrompe. Campos são derivados ao .env/config/webpush.php e conferidos antes das migrations; chave privada nunca entra na configuração pública Vite/API/log. Não apagar/rotacionar VAPID nem APP_KEY durante atualização.
+
+.env.testing mantém push/test-auth desabilitados e VAPID vazias. Testes de integração ativam apenas configurações de processo e simulam a fila/transporte, no MySQL testing protegido. Produção rejeita PUSH_TEST_AUTH_ENABLED=true; rotas/CLI de acesso local também conferem APP_ENV=local. Nenhuma conta é semeada pelo bootstrap.
+
+Fila database reaproveita jobs/failed_jobs. push:work executa no PHP-FPM existente, fila push, lock de 180s, janela de 50s e limite externo de 75s via Symfony Process; retry_after padrão de 90s. Não executar workers concorrentes externos sem ajustar esses limites. Jobs têm timeout de 45s, transporte de 15s e três tentativas. Cron chama push:work periodicamente; Scheduler não consome jobs. Sem novo contêiner, Redis ou daemon obrigatório. O PHP precisa permitir processos locais (proc_open); ausência falha sem anunciar envio concluído. Comandos e teste real somente no guia da raiz.
+

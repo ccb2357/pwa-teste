@@ -20,3 +20,6 @@
 Regra visual aprovada: inputs, selects e textareas sem outline retangular de foco. Usar a regra global de app.css e o estado próprio do Framework7; não reintroduzir anéis/contornos nesses campos em CSS local ou compartilhado.
 
 15. PWA usa injectManifest/worker único e atualização prompt. Cache somente público; APIs/sessão/CSRF/diagnóstico nunca recebem fallback HTML/offline. Formulário alterado bloqueia recarga externa; atualização confirmada preserva campos ou mantém a aba em falha. Instalação só por ação explícita/menu. Validar build antes de publicar e assets antes do HTML/worker.
+
+16. Web Push: usar serviço central, APIs de sessão com CSRF/ownership/rate limit, VAPID privada por ambiente e worker único. Não transferir endpoints, pedir permissão ao abrir, enviar no bootstrap ou inventar login de produção. Revalidar preferências/dispositivos na fila; remover apenas inscrições expiradas 404/410; não registrar endpoints/chaves/payload. Acesso local de teste é opcional e nunca habilitado em produção. Evidência de entrega exige aparelho real.
+

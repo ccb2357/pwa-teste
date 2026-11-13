@@ -83,6 +83,14 @@ export function validate(input, root) {
   c.PWA_THEME_COLOR ||= '#007aff'; c.PWA_BACKGROUND_COLOR ||= '#ffffff';
   for (const key of ['PWA_THEME_COLOR', 'PWA_BACKGROUND_COLOR']) requireThat(/^#[0-9a-fA-F]{6}$/.test(c[key]), `${key} deve usar #RRGGBB.`);
   for (const [key, value] of Object.entries(c)) if (typeof value === 'string') requireThat(!/[\r\n\0]/.test(value), `${key} não aceita múltiplas linhas.`);
+  for (const key of ['PUSH_ENABLED', 'PUSH_TEST_AUTH_ENABLED']) {
+    c[key] ||= 'false';
+    requireThat(['true', 'false'].includes(c[key]), `${key} deve ser true ou false.`);
+  }
+  requireThat(c.APP_ENV !== 'production' || c.PUSH_TEST_AUTH_ENABLED === 'false', 'Produção não permite acesso de teste push.');
+  c.VAPID_SUBJECT ||= ''; c.VAPID_PUBLIC_KEY ||= ''; c.VAPID_PRIVATE_KEY ||= '';
+  requireThat(Boolean(c.VAPID_PUBLIC_KEY) === Boolean(c.VAPID_PRIVATE_KEY), 'Par VAPID parcial; configure as duas chaves ou deixe ambas vazias para geração inicial.');
+  if (c.PUSH_ENABLED === 'true') requireThat(c.VAPID_SUBJECT.startsWith('mailto:') || c.VAPID_SUBJECT.startsWith('https://'), 'Informe VAPID_SUBJECT real no central.');
   c.base = c.PROJECT_SLUG.replaceAll('-', '_'); c.nodeService = c.PROJECT_SLUG + '-node';
   c.vendorVolume = c.base + '_vendor'; c.modulesVolume = c.base + '_node_modules';
   c.backend = path.join(root, 'backend'); c.frontend = path.join(root, 'frontend');

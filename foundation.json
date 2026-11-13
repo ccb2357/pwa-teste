@@ -1,6 +1,6 @@
 {
-  "foundationVersion": "0.4.0-sprint.4",
-  "stage": "pwa",
+  "foundationVersion": "0.5.0-sprint.5",
+  "stage": "push",
   "completeFoundation": false,
   "skeleton": {
     "package": "laravel/laravel",
@@ -26,5 +26,11 @@
     "vite": "8.3.4",
     "vite-plugin-pwa": "2.0.0",
     "workbox": "7.4.1"
+  },
+  "push": {
+    "channel": "13.0.1",
+    "web-push": "11.0.0",
+    "queue": "database",
+    "enabledByDefault": false
   }
 }

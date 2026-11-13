@@ -58,3 +58,6 @@ Referências oficiais: [variáveis CSS](https://framework7.io/docs/css-variables
 PwaStatus.vue compõe os blocos/botões/diálogo oficiais para instalação e atualização. Estados são textuais e anunciados, com ações explícitas; não cria paleta ou overlay próprio. Usa app-actions/app-note e preserva a regra de campos sem outline retangular.
 
 A página técnica offline.html é a exceção mínima sem JavaScript: usa Nunito local, texto e link HTML nativos, sem identidade visual ou controles próprios. A Hello offline continua com o CSS/controles Framework7 completos do precache.
+
+PushSettings.vue reutiliza block/list/list-input/checkbox/button/dialog oficiais, app-actions/app-choice/app-note e status-heading; sem CSS local. Código de teste tem label associado e autocomplete off. Estados assíncronos usam aria-busy, região role=status, disabled/aria-disabled/tabindex e guarda de reentrada. Revogação remota exige confirmação; falhas de sessão/permissão/inscrição têm texto explícito. Web Push do sistema operacional tem aparência definida pelo navegador/SO, não pelo Framework7.
+

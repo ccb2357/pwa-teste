@@ -4,6 +4,6 @@ PWA Framework é uma fundação reutilizável para criar PWAs independentes. O p
 
 Inclui bootstrap portátil e idempotente, configuração central por ambiente, Laravel/MySQL, Framework7 Vue, Hello com componentes interativos, design system, PWA, Web Push, testes e documentação de continuidade. Cada clone recebe a base pronta e executa o inicializador; não repete as sprints.
 
-Não inclui login completo, regras de negócio, integrações bancárias, persistência de dados do formulário Hello, edição offline/sincronização de registros ou pagamentos. Sanctum/sessão/CSRF ficam preparados para futuros fluxos.
+Não inclui login completo, regras de negócio, integrações bancárias, persistência de dados do formulário Hello, edição offline/sincronização de registros ou pagamentos. Web Push exige sessão Laravel/Sanctum e CSRF. Há acesso de teste opcional apenas local, sem autenticação de produção inventada.
 
 Critérios de construção concluída: Hello interativa e status real, backend/banco integrados, build/PWA e Web Push verificados, testes aplicáveis, bootstrap funcional, dois clones isolados e reexecução validados. Aparelhos reais e produção exigem evidências específicas. O [README](../../README.md) rege o escopo detalhado; andamento somente em [MEMORY](../../MEMORY.md).

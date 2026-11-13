@@ -51,7 +51,7 @@ Carregamento/sucesso/falha explícitos; offline nunca indica banco saudável sem
 
 Título/nome vêm da configuração pública gerada. BackendStatus faz GET fresco com credentials include e cache no-store; estados carregando/OK/503/falha/offline/não verificado, cancelamento/timeout e descarte de respostas antigas. Eventos offline limpam o OK anterior; online consulta novamente. Formulário apenas confirma, não transmite dados; celular brasileiro com DDD e 11 dígitos. Inputs Vue mantêm o valor formatado da máscara. Autocomplete local: Blumenau, Florianópolis, Balneário Camboriú, Curitiba, São Paulo e Rio de Janeiro. Calendar usa openIn=sheet em todas as larguras; Smart Select usa popup. Hello mantém seu estado ao visitar as páginas auxiliares. APIs Core/máscaras/validadores são destruídos ao remover a página. Movimento reduzido desativa animação da navegação.
 
-Instalação/offline/atualização são funcionais no build; Web Push permanece na Sprint 5 e não é confundido com notification interna.
+Instalação/offline/atualização e Web Push usam o mesmo build/worker; notification interna Framework7 não comprova entrega push.
 
 Os nomes exibidos cover-v/dive/fade/parallax correspondem aos identificadores nativos f7-cover-v/f7-dive/f7-fade/f7-parallax nas opções do roteador, preservando avanço e retorno oficiais.
 
@@ -60,3 +60,10 @@ Hello e destino de transição compartilham app-content/app-heading e tokens de 
 
 
 Atualização exige confirmação explícita. Campos da Hello (cidade/data/e-mail/celular/checkbox/linguagem/contador) podem ser preservados temporariamente por aba durante a recarga; não há envio nem persistência de registros. Data é serializada/restaurada e a máscara sincronizada. Aba alterada não é recarregada por outra aba; storage indisponível bloqueia atualização com alterações. No iPhone, orientar Compartilhar → Adicionar à Tela de Início quando não houver prompt.
+
+## Push na Hello
+
+PushSettings.vue compõe controles oficiais sem página separada: autenticação, suporte/HTTPS/instalação iOS, ambiente desabilitado, permissão negada, preferência global, adesão/cancelamento do dispositivo, lista própria/revogação e estado dos envios. Sem prompt ao abrir; permissão somente por Ativar neste dispositivo. Sem suporte ou no Vite dev, orientar uso do build. Não transferir inscrição de outra conta; cancelar vínculo local explicitamente antes de cadastrar novamente.
+
+Acesso local opcional usa código CLI de uso único/10 minutos, campo password e botão Entrar para testar. Produção não oferece esse acesso nem envio de teste. Sair revoga o dispositivo vinculado à sessão, preservando os outros. Código pendente ou operação push em andamento bloqueiam atualização da aba; código nunca entra no rascunho/sessionStorage. Enfileirada e aceita pelo provedor são estados distintos de recebida/lida. Clique foca aba no destino ou abre outra, sem navegar uma aba com formulário alterado.
+

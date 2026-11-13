@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { args, load, schema } from './lib/config.mjs';
+import { args, load, schema, parseCentral } from './lib/config.mjs';
 import { FoundationError, requireThat, httpFailure } from './lib/errors.mjs';
 import { docker, jsonOutput } from './lib/process.mjs';
 import { discover, infraProblems, phpExec, checkPorts } from './lib/docker.mjs';
@@ -18,7 +18,7 @@ try {
   const saved = await readOptional(stateFile, '{}');
   try { state = JSON.parse(saved); } catch { throw new FoundationError('Estado local inválido. Preserve-o para diagnóstico; não reinicialize identidade automaticamente.'); }
   checkIdentity(state, c);
-  state = { ...state, schema, identity: identity(c), release: '0.4.0-sprint.4', completeFoundation: false, startedAt: new Date().toISOString() };
+  state = { ...state, schema, identity: identity(c), release: '0.5.0-sprint.5', completeFoundation: false, startedAt: new Date().toISOString() };
   console.log(`Preparação de ${c.PROJECT_SLUG} (${c.APP_ENV}).`);
   const d = await discover(c);
   if (state.composeProject) requireThat(state.composeProject === d.project, 'Identidade da infraestrutura Compose mudou; revisar explicitamente.');
@@ -53,13 +53,18 @@ try {
     await phpExec(c, d, ['php', '-r', "if(file_put_contents('vendor/.foundation-lock',stream_get_contents(STDIN))===false){exit(1);}"], fingerprint + '\n', 'Marcador de dependências no volume vendor');
   } else console.log('Dependências PHP inalteradas; instalação preservada.');
   await phpExec(c, d, ['composer', 'check-platform-reqs', ...(c.APP_ENV === 'production' ? ['--no-dev'] : [])], undefined, 'Plataforma PHP/Composer');
+  await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/push-keys.php')], undefined, 'Conferência/geração VAPID privada (verifique subject e par no central)');
+  const centralAfterKeys = parseCentral(await fs.readFile(path.join(c.root, '.env.foundation'), 'utf8'));
+  for (const key of ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY']) c[key] = centralAfterKeys[key] || '';
+  await synchronizeEnvs(c);
+  await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/permissions.php')], undefined, 'Permissões após VAPID');
   const databases = await docker(['exec', '-i', '--workdir', c.backend, d.php.Id, 'php', path.join(c.root, 'scripts/bootstrap/php/databases.php')], {
     input: JSON.stringify({ host: c.DB_HOST, port: c.DB_PORT, username: c.DB_USERNAME, password: c.DB_PASSWORD, database: c.DB_DATABASE, testDatabase: c.DB_TEST_DATABASE }), label: 'Conexão/criação de bancos com a conta existente', allowFailure: true,
   });
   if (databases.code !== 0) throw new FoundationError(databases.code === 2 ? 'Banco ausente sem permissão de criação. Crie os bancos informados no central manualmente com a conta existente e repita.' : 'Conexão aos bancos falhou. Confira os valores privados e a rede; nenhuma credencial será exibida.', databases.code === 2 ? 2 : 1);
   jsonOutput(databases, 'Verificação dos bancos');
   await phpExec(c, d, ['php', 'artisan', 'config:clear', '--no-interaction'], undefined, 'Limpeza de configuração em processo separado');
-  await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/verify-runtime.php')], JSON.stringify({ environment: c.APP_ENV, name: c.PROJECT_NAME, url: c.appUrl, timezone: c.APP_TIMEZONE, host: c.DB_HOST, port: c.DB_PORT, database: c.DB_DATABASE, username: c.DB_USERNAME, password: c.DB_PASSWORD, cookie: c.sessionCookie, stateful: c.stateful }), 'Conferência da configuração efetiva antes de migrations');
+  await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/verify-runtime.php')], JSON.stringify({ environment: c.APP_ENV, name: c.PROJECT_NAME, url: c.appUrl, timezone: c.APP_TIMEZONE, host: c.DB_HOST, port: c.DB_PORT, database: c.DB_DATABASE, username: c.DB_USERNAME, password: c.DB_PASSWORD, push: c.PUSH_ENABLED === 'true', pushTestAuth: c.PUSH_TEST_AUTH_ENABLED === 'true', vapidSubject: c.VAPID_SUBJECT, vapidPublic: c.VAPID_PUBLIC_KEY, vapidPrivate: c.VAPID_PRIVATE_KEY, queue: 'database', cookie: c.sessionCookie, stateful: c.stateful }), 'Conferência da configuração efetiva antes de migrations');
   console.log('Sincronizando caches e migrations pendentes.');
   await phpExec(c, d, ['php', 'artisan', 'app:sync', '--no-interaction', ...(options.force ? ['--force'] : [])], undefined, 'app:sync');
   await phpExec(c, d, ['php', path.join(c.root, 'scripts/bootstrap/php/permissions.php')], undefined, 'Permissões finais');
@@ -82,9 +87,9 @@ try {
   const reasons = ['http', 'html', 'cache', 'manifest', 'worker', 'offline', 'asset-path', 'asset-cache', 'api-route'];
   requireThat(verifyPwa.code === 0 && pwaEvidence.status === 'ok', 'PWA HTTP: ' + (reasons.includes(pwaEvidence.reason) ? pwaEvidence.reason : 'verificação falhou') + '. Confira build/Nginx no guia.');
   state.phase = 'pwa-ready'; state.lastExitCode = 0; state.phpVersion = version; state.composerLock = hash(lockfile); state.frontendBuild = build.buildId; state.verifiedAt = new Date().toISOString(); state.checks = { ...evidence.checks, pwa: pwaEvidence.checks };
-  state.pending = ['Instalação/offline/atualização em navegador/aparelhos reais', 'Push Notifications (Sprint 5)', 'Validações finais (Sprint 6)']; await save();
+  state.pending = ['Entrega/clique push em navegador/aparelho real', 'Operação da fila na infraestrutura efetiva', 'Validações finais (Sprint 6)']; await save();
   console.log(`Backend e build PWA verificados via Nginx. Abra ${c.appUrl}. Build: ${build.buildId}.`);
-  console.log('Código 0 não atesta instalação, offline ou atualização em aparelhos. Push e aceite final continuam pendentes.');
+  console.log('Código 0 não atesta instalação, offline ou atualização em aparelhos. Recebimento push e aceite final exigem validação própria.');
 } catch (error) {
   if (state) { state.phase = error.code === 2 ? 'manual-pending' : 'failed'; state.lastExitCode = error.code === 2 ? 2 : 1; await save().catch(() => {}); }
   console.error(error instanceof FoundationError ? error.message : 'Bootstrap interrompido. Confira configuração, caminhos e acesso aos arquivos; detalhes privados não são exibidos.');

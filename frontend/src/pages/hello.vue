@@ -5,7 +5,7 @@
       <f7-block>
         <h1 class="app-heading">Hello</h1>
         <p>Bem-vindo à {{ appConfig.name }}. Experimente os componentes oficiais e confira a integração com o backend.</p>
-        <p class="app-note">Teste de atualização — versão C.</p>
+        <p class="app-note">As demonstrações usam dados locais e não gravam registros.</p>
       </f7-block>
 
       <f7-block-title>Integração real</f7-block-title>
@@ -113,7 +113,7 @@
 
       <f7-block-title>Recursos da PWA</f7-block-title>
       <PwaStatus />
-      <f7-block class="app-note">Push Notifications será integrado na próxima etapa.</f7-block>
+      <PushSettings ref="pushSettings" />
     </div>
 
     <f7-fab slot="fixed" position="right-bottom" @fab:open="fabOpened = true" @fab:close="onFabClose" @keydown.esc.prevent.stop="closeFab">
@@ -153,9 +153,10 @@ import { initDemoForm } from '../forms/demo.js';
 import BackendStatus from '../components/BackendStatus.vue';
 import LucideIcon from '../components/LucideIcon.vue';
 import PwaStatus from '../components/PwaStatus.vue';
+import PushSettings from '../components/PushSettings.vue';
 import { pwa } from '../pwa/index.js';
 import { cleanDraft, draftStorage } from '../pwa/draft.js';
-const page = ref(null), form = ref(null);
+const page = ref(null), form = ref(null), pushSettings = ref(null);
 let session;
 try { session = window.sessionStorage; } catch { session = { getItem() { return null; }, setItem() { throw new Error('Session unavailable'); } }; }
 const drafts = draftStorage(session, appConfig.slug);
@@ -164,7 +165,10 @@ const city = ref(restored.city), date = ref(restored.date.map(value => new Date(
 const phoneValue = ref(restored.phone), emailValue = ref(restored.email);
 const snapshot = () => ({ city: city.value, date: date.value.map(value => new Date(value).toISOString()), email: emailValue.value, phone: phoneValue.value, checked: checked.value, language: language.value, count: count.value });
 const dirty = computed(() => JSON.stringify(snapshot()) !== JSON.stringify(cleanDraft(null)));
-const releaseDraftGuard = pwa.draftGuard(() => dirty.value, () => drafts.save(snapshot()));
+const releaseDraftGuard = pwa.draftGuard(() => dirty.value || pushSettings.value?.hasPending, () => {
+  if (pushSettings.value?.hasPending) throw new Error('Conclua a operação push ou limpe o código de acesso antes de atualizar.');
+  drafts.save(snapshot());
+});
 const fabOpened = ref(false);
 const dialogResult = ref('Experimente confirmar ou cancelar o diálogo.');
 const cities = ['Blumenau', 'Florianópolis', 'Balneário Camboriú', 'Curitiba', 'São Paulo', 'Rio de Janeiro'];

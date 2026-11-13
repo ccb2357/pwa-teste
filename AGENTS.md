@@ -14,10 +14,13 @@ Executor temporário por docker run --rm, imagem construída com docker build; s
 
 Atualizar a especificação responsável e MEMORY.md em cada entrega relevante. SDD descreve o sistema, MEMORY registra estado/evidências e próximo passo. Distinguir entregue, instalado e validado. Não declarar funcionamento no Windows ou VPS sem evidência real.
 
-Frontend: grid/CSS Framework7 + tokens compartilhados; main.js/App.vue/rotas F7, sem biblioteca extra de estilos. O bootstrap gera frontend/.foundation.public.json com whitelist e instala npm pelo lockfile no volume node_modules. Não ler o central privado no Vite. PWA/worker injectManifest entregue; push na Sprint 5, sem login completo antecipado.
+Frontend: grid/CSS Framework7 + tokens compartilhados; main.js/App.vue/rotas F7, sem biblioteca extra de estilos. O bootstrap gera frontend/.foundation.public.json com whitelist e instala npm pelo lockfile no volume node_modules. Não ler o central privado no Vite. PWA/worker injectManifest e Web Push integrado, sem login completo antecipado.
 
 Consistência: usar classes app-content/app-heading/app-note/app-actions e tokens existentes antes de criar CSS local. Conferir label/input, nomes acessíveis, foco visível, disabled/loading, mensagens e teclado (inclusive FAB). Não substituir controles oficiais por wrappers. Aceite visual e de teclado depende de navegador real; registrar separadamente simulações.
 
 Regra visual aprovada: inputs, selects e textareas sem outline retangular de foco. Usar a regra global de app.css e o estado próprio do Framework7; não reintroduzir anéis/contornos nesses campos em CSS local ou compartilhado.
 
 PWA: usar somente src/sw.js e virtual:pwa-register. Não cachear API/sessão/CSRF/diagnósticos nem recarregar formulário alterado por atualização automática. Novos formulários integram draftGuard explicitamente. Build usa staging/publicação validada; preservar assets antigos até política de limpeza. Comandos e aplicação manual do Nginx no guia; não confundir testes simulados com instalação real.
+
+Push: envio somente pelo PushNotificationService, sessão/CSRF/ownership/rate limit obrigatórios; nunca transferir endpoints entre contas. VAPID privada preservada; permissão só por clique e SW único. Preferência/inscrição são revalidadas pelos jobs. Acesso de teste só local e explícito, sem senha fixa ou envio automático; produção não expõe esse acesso. Guia concentra VAPID/fila/testes. Não confundir fila/aceite do provedor com recebimento real.
+

@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "pwa-framework/backend",
     "type": "project",
-    "description": "Backend reutilizável da fundação PWA Framework",
+    "description": "Backend reutiliz\u00e1vel da funda\u00e7\u00e3o PWA Framework",
     "keywords": [
         "laravel",
         "framework"
@@ -11,7 +11,8 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "12.70.0",
-        "laravel/sanctum": "4.4.0"
+        "laravel/sanctum": "4.4.0",
+        "laravel-notification-channels/webpush": "13.0.1"
     },
     "require-dev": {
         "fakerphp/faker": "1.24.1",

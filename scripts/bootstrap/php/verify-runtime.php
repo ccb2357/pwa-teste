@@ -14,6 +14,7 @@ try {
     $values = [
         'environment' => $app->environment(), 'name' => $config->get('app.name'), 'url' => $config->get('app.url'), 'timezone' => $config->get('app.timezone'),
         'host' => $mysql['host'], 'port' => (int) $mysql['port'], 'database' => $mysql['database'], 'username' => $mysql['username'], 'password' => (string) $mysql['password'],
+        'push' => (bool) $config->get('webpush.enabled'), 'pushTestAuth' => (bool) $config->get('webpush.test_auth'), 'vapidSubject' => (string) $config->get('webpush.vapid.subject'), 'vapidPublic' => (string) $config->get('webpush.vapid.public_key'), 'vapidPrivate' => (string) $config->get('webpush.vapid.private_key'), 'queue' => $config->get('queue.default'),
         'cookie' => $config->get('session.cookie'), 'stateful' => implode(',', $config->get('sanctum.stateful')),
     ];
     if ($values !== $expected || $config->get('database.default') !== 'mysql' || ! empty($mysql['url']) || ! empty($mysql['unix_socket']) || isset($mysql['read']) || isset($mysql['write']) || ($expected['environment'] === 'production' && $config->get('app.debug'))) {

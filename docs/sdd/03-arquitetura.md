@@ -8,7 +8,7 @@ components/ reúne composições reutilizáveis reais; services/api.js centraliz
 
 Backend: serviço de diagnóstico único para HTML/JSON com consulta simples real MySQL e falha 503 controlada. Diagnósticos públicos independentes de sessão que possa consultar banco antes do diagnóstico. app:sync limpa caches e executa migrations; nunca instala, builda, semeia ou regenera chave.
 
-Sessão Laravel/Sanctum com cookies e CSRF, host-only por padrão compatível com localhost:porta e domínio Nginx. Nome de cookie exclusivo por slug; origens stateful incluem portas efetivas. Produção HTTPS com cookies seguros. Validar CSRF através de Vite/proxy e Nginx. Login/permissões são escopo futuro.
+Sessão Laravel/Sanctum com cookies e CSRF, host-only por padrão compatível com localhost:porta e domínio Nginx. Nome de cookie exclusivo por slug; origens stateful incluem portas efetivas. Produção HTTPS com cookies seguros. Validar CSRF através de Vite/proxy e Nginx. Login completo/permissões de negócio são escopo futuro; o acesso de teste push é restrito ao ambiente local e a contas marcadas.
 
 Dados: migrations iniciais oficiais Laravel; banco principal e banco testing separados, mesma conta existente. Nenhuma entidade de negócio adicional. Banco testing deve ser validado contra a configuração efetiva antes de operações destrutivas; produção bloqueia essas operações.
 
@@ -32,9 +32,20 @@ Vite lê somente .foundation.public.json gerado pelo bootstrap; define uma white
 
 frontend.mjs usa contêiner Node temporário no Engine, bind host mapeado e volume exclusivo node_modules, sem Compose mutável dentro do executor. npm ci --include=dev usa lockfile; marcador real no volume combina hashes de manifest/lock e modo Node 22. Reexecução com dependências presentes/inalteradas não reinstala. Erro de npm interrompe com estado failed; não marca conclusão parcial. O bootstrap prepara frontend e publica o build verificado em dist, sem iniciar Vite. scripts/check-pwa.mjs confere os artefatos; publish-build.mjs valida staging, publica assets antes dos pontos de entrada e mantém assets antigos.
 
-Web Push é contrato da Sprint 5: serviço central Laravel, VAPID privada por ambiente, fila database, APIs autenticadas e integração ao mesmo worker. O worker existente não tem handlers push; nenhuma API, permissão ou chave push foi habilitada.
+Web Push usa laravel-notification-channels/webpush 13.0.1/Minishlink 11.0.0, sem atualizar Laravel/PHP. PushNotificationService seleciona usuários autorizados, percorre usuários/dispositivos em blocos de 100 e cria PushDelivery + SendPushDelivery na fila database/push. Produtos definem destinatários/gatilhos no backend, nunca em broadcast público.
 
 
 PwaStatus.vue usa pwa/manager.js para registro por virtual:pwa-register, instalação explícita, conectividade e atualização prompt. onNeedReload controla recarga por aba: formulário alterado não recarrega por ativação externa; confirmação salva dados conhecidos da Hello no sessionStorage antes de ativar/recarregar, com nova captura ao controlar a página. Falha no armazenamento mantém a aba. Rascunho por slug/aba, consumido uma vez e expira em 24h; sem persistência ou fila de dados da API. Novos formulários de produto precisam integrar explicitamente draftGuard.
 
 O único sw.js usa Workbox precaching/routing/NetworkOnly. Fallback do shell somente / e rotas auxiliares conhecidas; demais navegações públicas sem rede recebem offline.html. technicalPath exclui API/sanctum/up/status/backend/storage/vendor, dotfiles e PHP inclusive variantes codificadas. Nenhum runtime cache de API, sessão ou CSRF; mutações seguem a rede. CacheStorage é isolado por origem/escopo; limpeza automática somente do precache Workbox deste escopo.
+
+## Persistência e transporte push
+
+users guarda push_enabled/is_push_test. PushSubscription deriva do modelo oficial, com endpoint_hash SHA-256 único para busca/ownership; endpoint e chaves são criptografados por APP_KEY. PushDelivery guarda UUID/lote/dono/dispositivo, payload criptografado e resultado controlado. Tokens de acesso de teste são hashes SHA-256 com validade; código não é persistido em texto. Não usar updatePushSubscription do trait oficial: o controller da fundação evita transferência e usa hash para pesquisar campos criptografados.
+
+Jobs carregam somente o UUID, revalidam ambiente/preferência/ownership e cancelam inscrições revogadas ou envios com mais de 24h. Lock por envio, até três tentativas e backoff; SafeWebPushChannel usa Notifications/canal oficial com cliente PSR-18 síncrono. TLS, redirects desabilitados, allowlist de provedores, validação de todos os IPs DNS e CURLOPT_RESOLVE impedem destino privado/rebinding durante o envio. Provedores: FCM, Mozilla, Apple e subdomínios notify.windows.com. Novos provedores exigem revisão explícita dessa política.
+
+Somente 404/410 removem inscrição. Rede/DNS indisponível/429/5xx retomam; 401/403 ou configuração inválida falham sem apagar inscrições válidas. DeliveryReports registra enfileirada/aceita/falha/cancelada, sem URLs/chaves/payload nos logs. Entrega é pelo menos uma tentativa: interrupção entre aceite e gravação pode duplicar; tag UUID reduz duplicação visual, sem promessa de exactly-once. Revogação não recolhe mensagem já enviada. Limpeza/retenção dos registros deve ser definida pelo produto.
+
+O mesmo sw.js trata push, notificationclick e pushsubscriptionchange com waitUntil, payload mínimo e destino seguro na mesma origem. Não renova permissão automaticamente. PushSettings reconcilia inscrição local/lista da conta ao entrar, retornar à aba ou trocar controller. Logout Laravel revoga o ID associado à sessão; produtos devem também cancelar a inscrição local pelo cliente e preservar a verificação de ownership ao integrar seu login/logout.
+

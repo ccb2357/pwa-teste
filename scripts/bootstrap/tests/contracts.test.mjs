@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { parseCentral, validate, args, contained } from '../lib/config.mjs';
 import { mapPath, mappedPaths, infraProblems, sameHost } from '../lib/docker.mjs';
-import { managedEnv, appKey, checkIdentity, identity, writeAtomic } from '../lib/files.mjs';
+import { managedEnv, synchronizeEnvs, appKey, checkIdentity, identity, writeAtomic } from '../lib/files.mjs';
 import { composeSnippet, nginxSnippet, siteApplied, viteCmd, publicConfiguration } from '../lib/templates.mjs';
 import { run } from '../lib/process.mjs';
 import { httpFailure } from '../lib/errors.mjs';
@@ -148,4 +148,14 @@ test('PWA Nginx separates backend routes, mutable entrypoints and immutable asse
   assert.match(site, /location = \/sw.js[^}]+no-cache/);
   assert.match(site, /location \/assets\/[^}]+immutable/);
   assert.doesNotMatch(site, /return 302 \/status/);
+});
+test('push defaults, private derivation and production test access are guarded', async () => {
+  const defaults = config(); assert.equal(defaults.PUSH_ENABLED, 'false');
+  assert.throws(() => config({ PUSH_ENABLED: 'true' }));
+  assert.throws(() => config({ VAPID_PUBLIC_KEY: 'partial' }));
+  assert.throws(() => config({ APP_ENV: 'production', PRODUCTION_URL: 'https://app.example.test', PUSH_TEST_AUTH_ENABLED: 'true' }));
+  const c = config({ PUSH_ENABLED: 'true', VAPID_SUBJECT: 'mailto:push@example.test', VAPID_PUBLIC_KEY: 'PUBLIC-TEST', VAPID_PRIVATE_KEY: 'PRIVATE-TEST' });
+  assert.doesNotMatch(JSON.stringify(publicConfiguration(c)), /PRIVATE-TEST|PUBLIC-TEST|VAPID/);
+  const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'push-env-'));
+  try { await synchronizeEnvs({ ...c, backend: temp }); const env = parseCentral(await fs.readFile(path.join(temp, '.env'), 'utf8')); assert.equal(env.QUEUE_CONNECTION, 'database'); assert.equal(env.VAPID_PRIVATE_KEY, 'PRIVATE-TEST'); const testing = parseCentral(await fs.readFile(path.join(temp, '.env.testing'), 'utf8')); assert.equal(testing.PUSH_ENABLED, 'false'); assert.equal(testing.VAPID_PRIVATE_KEY, ''); } finally { await fs.rm(temp, { recursive: true, force: true }); }
 });

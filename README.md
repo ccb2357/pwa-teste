@@ -85,6 +85,7 @@ PUSH_ENABLED=false
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
 VAPID_SUBJECT=
+PUSH_TEST_AUTH_ENABLED=false
 ```
 
 | Grupo | Regra de resolução |
@@ -243,7 +244,7 @@ Incluir em AGENTS.md/RULES.md a exigência de arquivos atuais para nova análise
 | Desenvolvimento e build | Vite **8.3.4** com **@vitejs/plugin-vue** para componentes .vue |
 | Ambiente Node | Imagem Docker **node:22-alpine** |
 | PWA/Service Worker | **vite-plugin-pwa 2.0.0 + Workbox 7.4.1 injectManifest**, fonte única frontend/src/sw.js, precache, offline, atualização e eventos push/clique |
-| Push Notifications | Notifications Laravel + **laravel-notification-channels/webpush**, Web Push/VAPID e cliente Push API; versão compatível a fixar na Sprint 5 |
+| Push Notifications | Notifications Laravel + **laravel-notification-channels/webpush**, Web Push/VAPID e cliente Push API; 13.0.1 (Minishlink Web Push 11.0.0; PHP 8.2/Laravel 12) |
 | Fila de envio | Laravel **database** no MySQL existente; Jobs/worker no PHP-FPM, operados por mecanismo existente ou Cron, sem novo contêiner |
 | Backend/API | Laravel **12.70.0** |
 | PHP | PHP **8.2.x**, executado com PHP-FPM |
@@ -1117,17 +1118,3 @@ Registrar procedimentos concretos em instalacao-pwa-framework.md antes da primei
 - Validar configuração/logs sem segredos e fila/Cron ativa. Na publicação, reiniciar worker quando aplicável; job enfileirado não comprova processamento/envio.
 
 Sprints constroem a fundação; seção 0 rege clones. Aplicar convenções e registrar evidências por etapa. Publicação, aparelhos e entrega push real continuam pendentes até validação no ambiente correspondente.
-
-<!-- BEGIN FOUNDATION IDENTITY -->
-| Campo | Valor |
-| --- | --- |
-| Projeto | PWA Framework |
-| Slug | pwa-teste |
-| Ambiente | local |
-| URL | http://pwa-teste.localhost |
-| Dev / preview | 5176 / 5177 |
-| Serviço / Compose | pwa-teste-node / infra |
-| Volumes | pwa_teste_vendor, pwa_teste_node_modules |
-| Bancos | pwa_teste, pwa_teste_test |
-| Fundação | 0.4.0-sprint.4 |
-<!-- END FOUNDATION IDENTITY -->
