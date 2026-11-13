@@ -251,6 +251,8 @@ PUSH_TEST_AUTH_ENABLED=true
 
 2. Execute novamente o bootstrap da etapa 5. Ele instala as dependências PHP, prepara as tabelas, gera/preserva VAPID e publica o build. Não exige novo serviço Compose nem reconstrução do executor. Mantenha `.env.foundation` privado e não apague VAPID/APP_KEY nas atualizações.
 
+**Nome exibido nas notificações:** configure `PROJECT_NAME="Nome do aplicativo"` e `PWA_SHORT_NAME="Nome curto"` no `.env.foundation` e repita o bootstrap da etapa 5 para atualizar o manifest e o build. O Android pode demorar para atualizar o nome da PWA já instalada. O sininho é o ícone pequeno da notificação, separado do nome.
+
 3. No CMD, crie o acesso de teste local:
 
 ```cmd
@@ -282,6 +284,24 @@ Em VPS, agende o worker no Cron a cada minuto, adaptando os caminhos/serviço ex
 ```
 
 O usuário do Cron precisa acessar Docker. O comando tem lock e tempo limitado; não substitui a autenticação do produto. Desligue `PUSH_TEST_AUTH_ENABLED` e repita o bootstrap ao terminar os testes locais.
+
+### Usar push nas funcionalidades do aplicativo
+
+Crie a regra de notificação no backend do produto, em um Service, Job ou Listener. Quando a novidade estiver confirmada, selecione o usuário autorizado e chame o serviço central:
+
+```php
+$resultado = app(\App\Services\PushNotificationService::class)->sendToUser($usuario, [
+    'title' => 'Nova publicação',
+    'body' => 'Há uma novidade para você.',
+    'url' => '/novidades/123/',
+]);
+```
+
+`$usuario` é um modelo `App\Models\User` autorizado a acessar a novidade. Personalize `title`, `body` e `url`; o link deve ser uma rota real dentro do aplicativo. Não altere o teste da Hello para implementar notificações do produto. Avisos agendados usam uma rotina periódica que identifica quando notificar.
+
+O serviço enfileira para os dispositivos inscritos com preferência ativa; `$resultado['queued']` informa a quantidade enfileirada. O worker descrito acima processa os envios; enfileirar não confirma recebimento.
+
+Referências: [docs/sdd/03-arquitetura.md](docs/sdd/03-arquitetura.md) — serviço central, fila e gatilhos; [docs/sdd/05-api.md](docs/sdd/05-api.md) — campos, limites e contratos; [instalacao-pwa-framework.md](instalacao-pwa-framework.md#push-notifications-opcional) — configuração, teste e operação.
 
 ## Verificações e testes
 
