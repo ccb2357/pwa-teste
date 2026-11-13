@@ -61,3 +61,9 @@ A página técnica offline.html é a exceção mínima sem JavaScript: usa Nunit
 
 PushSettings.vue reutiliza block/list/list-input/checkbox/button/dialog oficiais, app-actions/app-choice/app-note e status-heading; sem CSS local. Código de teste tem label associado e autocomplete off. Estados assíncronos usam aria-busy, região role=status, disabled/aria-disabled/tabindex e guarda de reentrada. Revogação remota exige confirmação; falhas de sessão/permissão/inscrição têm texto explícito. Web Push do sistema operacional tem aparência definida pelo navegador/SO, não pelo Framework7.
 
+
+
+Histórico push usa f7-chip oficial em lista ordenada vertical, até quatro itens, cores nativas blue/green/red/gray por status. app.css ajusta apenas largura, altura para texto quebrável e espaçamento com tokens; chips são informativos, sem semântica de botão/ação/tabulação. No iOS, texto preto sobre as cores preenchidas; Material usa foreground/container nativos. Rótulo textual e detalhes acompanham a cor.
+
+
+Dispositivos push usam f7-card/f7-card-content e f7-button outline red. Identificação, descrição e ação ficam empilhadas, sem coluna after ou truncamento por ellipsis. app.css controla margens/largura com tokens; bordas, superfície e confirmação permanecem Framework7. Ação tem nome acessível que identifica o alvo e os mesmos estados disabled/reentrada.

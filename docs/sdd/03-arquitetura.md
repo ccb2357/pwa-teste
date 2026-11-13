@@ -49,3 +49,9 @@ Somente 404/410 removem inscrição. Rede/DNS indisponível/429/5xx retomam; 401
 
 O mesmo sw.js trata push, notificationclick e pushsubscriptionchange com waitUntil, payload mínimo e destino seguro na mesma origem. Não renova permissão automaticamente. PushSettings reconcilia inscrição local/lista da conta ao entrar, retornar à aba ou trocar controller. Logout Laravel revoga o ID associado à sessão; produtos devem também cancelar a inscrição local pelo cliente e preservar a verificação de ownership ao integrar seu login/logout.
 
+
+
+O construtor WebPush recebe PSR NullLogger para não converter avisos opcionais de desempenho (GMP/BCMath) em exceções do Laravel nem registrar diagnósticos SDK privados. A verificação das extensões obrigatórias continua no bootstrap; validações, exceções e relatórios HTTP continuam determinando o resultado. Não desabilitar globalmente o tratamento de erros PHP.
+
+
+Diagnóstico CLI opcional em scripts/bootstrap/php/diagnose-push.php confere configuração/inscrição/DNS e executa criptografia/canal com HTTP mock em memória. Não persiste resultado do mock nem consome fila; saída somente de etapas/metadados controlados, sem mensagens arbitrárias de exceção. O mock não comprova transporte externo ou recebimento.

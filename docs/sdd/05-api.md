@@ -47,3 +47,6 @@ Somente local e PUSH_TEST_AUTH_ENABLED=true: GET test-session informa disponibil
 
 PushNotificationService aceita title<=100/body<=240/url<=512 e image opcional. URL/imagem são caminhos seguros da mesma origem, excluindo API/CSRF/status/dotfiles/PHP; imagem PNG/JPEG/WebP pública, sem conteúdo privado. Autorização dos destinos de negócio permanece responsabilidade do produto. Imagens variam por navegador/SO. Sucesso do provedor não confirma recebimento ou leitura.
 
+
+
+Rate limit usa limiters nomeados independentes: push-api (60/min), push-login (5/min por IP), push-logout (10/min), push-subscriptions (20/min) e push-test (3/min). Operações autenticadas usam o ID da sessão web; fallback de convidado por IP. Consultas não consomem a cota específica de teste/cadastro e logout não consome a de login; o limite global continua valendo nas APIs autenticadas. Não usar contadores numéricos sem prefixo compartilhados entre esses grupos.

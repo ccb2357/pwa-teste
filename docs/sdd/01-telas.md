@@ -67,3 +67,9 @@ PushSettings.vue compõe controles oficiais sem página separada: autenticação
 
 Acesso local opcional usa código CLI de uso único/10 minutos, campo password e botão Entrar para testar. Produção não oferece esse acesso nem envio de teste. Sair revoga o dispositivo vinculado à sessão, preservando os outros. Código pendente ou operação push em andamento bloqueiam atualização da aba; código nunca entra no rascunho/sessionStorage. Enfileirada e aceita pelo provedor são estados distintos de recebida/lida. Clique foca aba no destino ou abre outra, sem navegar uma aba com formulário alterado.
 
+
+
+Últimos envios push: até quatro registros mais recentes, em pilha com chips Framework7 sem ação de clique. Enfileirada azul, aceita verde, falhou vermelho, cancelada cinza; texto do status e detalhes HTTP/falha preservados, sem depender só da cor. Ao atualizar a lista ou enfileirar novo teste, registros mais antigos saem da exibição, sem apagar histórico do banco.
+
+
+Dispositivos cadastrados: seção explicativa com um card Framework7 por inscrição. Este dispositivo/identificação e nome legível ficam acima do botão Remover dispositivo, em largura total. A remoção exige confirmação explicando que novos envios serão impedidos. O botão superior de desativação só aparece para uma inscrição local sem vínculo com a conta; não duplicar a ação do card atual.
