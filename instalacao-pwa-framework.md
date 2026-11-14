@@ -191,6 +191,57 @@ cd /d C:\var\www\meu-projeto\frontend
 vite.cmd build
 ```
 
+## Android por USB: preparação e Vite
+
+Este procedimento abre o Vite no Chrome do Android pelo cabo USB, usando um túnel ADB, sem depender da comunicação pelo Wi-Fi. Use a porta publicada no **Windows**, não a porta interna do contêiner.
+
+| Uso | Porta no Windows neste guia | Endereço no celular |
+| --- | --- | --- |
+| Vite: desenvolvimento/HMR | DEV_PORT, exemplo 5176 | http://localhost:5176 |
+| Vite: exemplo alternativo com DEV_PORT=5173 | 5173 | http://localhost:5173 |
+| Build/PWA: instalação, offline e push | PREVIEW_PORT, exemplo 5177 | http://localhost:5177 |
+
+### Comando rápido para começar no celular
+
+Com o Vite em execução (`vite.cmd dev`), Android conectado por USB e depuração autorizada, execute no CMD. **Se a porta publicada no Windows for 5173:**
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
+```
+
+Depois abra [http://localhost:5173](http://localhost:5173) no Chrome do celular. O caminho completo dispensa entrar na pasta platform-tools. Esse encaminhamento não inicia o Vite nem publica uma porta Docker.
+
+**Se manteve DEV_PORT=5176 conforme a etapa 3**, use este comando e abra [http://localhost:5176](http://localhost:5176):
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse tcp:5176 tcp:5176
+```
+
+Nos clones A/B, substitua a porta dos dois lados por DEV_PORT do clone. Para instalar/testar offline e push, use o build e PREVIEW_PORT, conforme a próxima seção.
+
+Se aparecer `no devices/emulators found`, confira o cabo/conexão e execute:
+
+```cmd
+C:\tools\platform-tools\adb.exe devices -l
+```
+
+O aparelho deve aparecer como `device`; se estiver `unauthorized`, desbloqueie e autorize a depuração. Com vários aparelhos, acrescente `-s SERIAL` logo após adb.exe, usando o identificador listado. Refaça o encaminhamento após reconectar o cabo ou reiniciar o ADB.
+
+### Preparação inicial — uma vez por computador e celular
+
+**No Windows:**
+
+1. Baixe [SDK Platform-Tools for Windows](https://developer.android.com/tools/releases/platform-tools).
+2. Extraia a pasta platform-tools para `C:\tools\platform-tools`.
+3. Confira se existe `C:\tools\platform-tools\adb.exe`. Não precisa instalar Android Studio nem alterar o PATH.
+
+**No Android:**
+
+1. Ative as opções do desenvolvedor. Em Samsung: **Configurações → Sobre o telefone → Informações do software → Número de compilação**; toque sete vezes e informe o PIN quando solicitado. O caminho pode variar conforme o aparelho.
+2. Em **Opções do desenvolvedor**, ative **Depuração USB**.
+3. Conecte um cabo USB que permita transferência de dados e mantenha a tela desbloqueada.
+4. Ao aparecer **Permitir depuração USB?**, autorize o computador. Marque a autorização permanente somente em computador de confiança.
+
 ## Testar a PWA no Windows/Android por USB
 
 Após aplicar os arquivos, atualize dependências pelo bootstrap da etapa 5; alternativamente, com configuração pública já regenerada, execute na pasta infra:
@@ -224,6 +275,47 @@ C:\tools\platform-tools\adb.exe reverse --list
 ```
 
 Abra http://localhost:5177 no Chrome Android. A porta interna 4173 do log não é o endereço do aparelho. Se houver vários aparelhos, selecione com `-s`. Ctrl+C encerra a prévia.
+
+## Encerrar testes e liberar portas
+
+1. Encerre o Vite/prévia com **Ctrl+C** no terminal onde iniciou cada um.
+2. Remova somente os túneis utilizados. Execute a linha correspondente à porta; adapte para as portas dos clones:
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse --remove tcp:5173
+```
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse --remove tcp:5176
+```
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse --remove tcp:5177
+```
+
+Confira os túneis restantes:
+
+```cmd
+C:\tools\platform-tools\adb.exe reverse --list
+```
+
+3. Se a porta continuar ocupada, liste os contêineres do serviço Node do projeto. Confira nome/porta e pare somente o Vite ou a prévia desejada, substituindo ID_DO_CONTAINER pelo ID listado:
+
+```cmd
+docker ps --filter "label=com.docker.compose.service=meu-projeto-node" --format "table {{.ID}}\t{{.Names}}\t{{.Ports}}"
+```
+
+```cmd
+docker stop ID_DO_CONTAINER
+```
+
+Se não houver contêiner correspondente, identifique quem escuta na porta do Windows; substitua 5173 pela porta em uso:
+
+```cmd
+netstat -ano -p tcp | findstr /C:":5173 "
+```
+
+Confira **endereço local/estado de escuta/PID** e encerre apenas o processo de teste identificado pelo Gerenciador de Tarefas. Remover o túnel ADB não encerra o servidor; parar o servidor não remove o túnel. Preserve os demais serviços/volumes e encaminhamentos; não use parada global nem `down -v`.
 
 ## Conferir atualização
 
