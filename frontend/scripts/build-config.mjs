@@ -14,5 +14,5 @@ export function buildIdentity(root, app) {
     else hash.update(relative.split(path.sep).join('/')).update(fs.readFileSync(file));
   }
   for (const relative of ['index.html', 'src', 'public', 'package-lock.json', 'vite.config.js', 'scripts']) visit(relative);
-  return '0.5.0-' + hash.digest('hex').slice(0, 12);
+  return '0.6.0-' + hash.digest('hex').slice(0, 12);
 }

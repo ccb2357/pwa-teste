@@ -32,3 +32,7 @@ frontend/.foundation.public.json
 
 frontend/.dist-build/
 **/*.publishing
+
+# Referência privada do aceite local
+.foundation-acceptance.json
+.foundation-acceptance.json.tmp

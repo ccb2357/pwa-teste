@@ -15,8 +15,10 @@ export async function installFrontend(c, d) {
   const manifest = JSON.parse(packageJson);
   requireThat(manifest.scripts?.dev && manifest.scripts?.build, 'Frontend precisa dos scripts dev e build.');
   const fingerprint = hash(packageJson + '\n' + lock + '\nnode22-include-dev');
-  const inspect = "const fs=require('node:fs');const p='node_modules/.foundation-lock';process.stdout.write(JSON.stringify({marker:fs.existsSync(p)?fs.readFileSync(p,'utf8').trim():'',metadata:fs.existsSync('node_modules/vite/package.json')&&fs.existsSync('node_modules/framework7-vue/package.json')}));";
+  const inspect = "const fs=require('node:fs');const p='node_modules/.foundation-lock';process.stdout.write(JSON.stringify({nodeVersion:process.versions.node,marker:fs.existsSync(p)?fs.readFileSync(p,'utf8').trim():'',metadata:fs.existsSync('node_modules/vite/package.json')&&fs.existsSync('node_modules/framework7-vue/package.json')}));";
   const state = jsonOutput(await docker(frontendCommand(c, d, ['node', '-e', inspect]), { label: 'Estado efetivo node_modules' }), 'Estado node_modules');
+  const version = String(state.nodeVersion || '').split('.').map(Number);
+  requireThat(version[0] === 22 && version[1] >= 13, 'Frontend exige Node 22.13 ou superior na linha 22. Atualize a imagem node:22-alpine antes de repetir.');
   if (state.marker === fingerprint && state.metadata) { console.log('Dependências frontend inalteradas; instalação preservada.'); return fingerprint; }
   console.log('Instalando dependências frontend pelo package-lock.json.');
   await docker(frontendCommand(c, d, ['npm', 'ci', '--include=dev', '--no-audit', '--no-fund']), { label: 'Instalação frontend npm ci', timeout: 900000 });

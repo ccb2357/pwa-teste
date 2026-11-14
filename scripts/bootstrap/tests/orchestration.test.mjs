@@ -11,8 +11,8 @@ const entry = fileURLToPath(new URL('../index.mjs', import.meta.url));
 const runtime = process.env.FOUNDATION_RUNTIME_PACKAGE || fileURLToPath(new URL('../executor/package.json', import.meta.url));
 const example = parseCentral(await fs.readFile(new URL('../../../.env.foundation.example', import.meta.url), 'utf8'));
 // Deterministic Engine/Compose simulation; never connects to or mutates a real Docker Engine.
-async function fixture({ pending = false, production = false, desktop = false, httpFailure = false, npmFailure = false, buildFailure = false, pwaFailure = false } = {}) {
-  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation-flow-'));
+async function fixture({ pending = false, production = false, desktop = false, httpFailure = false, npmFailure = false, buildFailure = false, pwaFailure = false, frontendNode = '22.23.4' } = {}) {
+  const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'foundation flow with spaces-'));
   const projects = tmp + '/projects', root = projects + '/product-a';
   await fs.mkdir(root + '/backend', { recursive: true }); await fs.mkdir(root + '/frontend'); await fs.mkdir(projects + '/infra'); await fs.mkdir(tmp + '/bin');
   await fs.copyFile(new URL('../../../instalacao-pwa-framework.md', import.meta.url), root + '/instalacao-pwa-framework.md');
@@ -29,7 +29,7 @@ async function fixture({ pending = false, production = false, desktop = false, h
   const php = { Id: 'php-id', Config: { Labels: labels('php-fpm') }, State: { Running: true }, Mounts: [...mounts, ...(!pending ? [{ Type: 'volume', Name: c.vendorVolume, Destination: c.backend + '/vendor' }] : [])], NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const nginx = { Id: 'nginx-id', Config: { Labels: labels('nginx') }, State: { Running: true }, Mounts: mounts, NetworkSettings: { Networks: { infra_network: {} }, Ports: {} } };
   const config = { services: { 'php-fpm': { volumes: [{ type: 'volume', source: c.vendorVolume, target: c.backend + '/vendor' }] }, [c.nodeService]: { image: 'node:22-alpine', working_dir: '/app', profiles: ['dev'], networks: { infra_network: {} }, volumes: [{ type: 'bind', source: '/srv/apps/product-a/frontend', target: '/app' }, { type: 'volume', source: c.modulesVolume, target: '/app/node_modules' }], ports: [{ target: 5173, published: '5176', host_ip: '127.0.0.1' }] } }, volumes: { [c.vendorVolume]: { name: c.vendorVolume }, [c.modulesVolume]: { name: c.modulesVolume } } };
-  const data = { php, nginx, config, site: pending ? '' : nginxSnippet(c), marker: '', installs: 0, syncs: 0, calls: [], httpFailure, npmMarker: '', npmInstalls: 0, npmFailure, builds: 0, buildFailure, pwaFailure };
+  const data = { php, nginx, config, site: pending ? '' : nginxSnippet(c), marker: '', installs: 0, syncs: 0, calls: [], httpFailure, npmMarker: '', npmInstalls: 0, npmFailure, builds: 0, buildFailure, pwaFailure, frontendNode };
   const dataFile = tmp + '/fake-engine.json'; await fs.writeFile(dataFile, JSON.stringify(data));
   const fake = `#!${process.execPath}
 import fs from 'node:fs';
@@ -44,7 +44,7 @@ else if(a[0]==='run'){
  if(a.includes('ci')){data.npmInstalls++;if(data.npmFailure){process.exitCode=42;process.stderr.write('PRIVATE-NPM-OUTPUT');}}
  else if(a.includes('build')){data.builds++;if(data.buildFailure){process.exitCode=45;process.stderr.write('PRIVATE-BUILD-OUTPUT');}}
  else if(a.includes('scripts/check-pwa.mjs'))out=JSON.stringify({buildId:'0.4.0-fixture',entry:'assets/app-fixture.js',files:['index.html','assets/app-fixture.js']});
- else if(a.includes('-e')){const code=a[a.indexOf('-e')+1];if(code.includes('JSON.stringify'))out=JSON.stringify({marker:data.npmMarker,metadata:!!data.npmMarker});else if(code.includes('writeFileSync'))data.npmMarker=stdin().trim();}
+ else if(a.includes('-e')){const code=a[a.indexOf('-e')+1];if(code.includes('JSON.stringify'))out=JSON.stringify({nodeVersion:data.frontendNode,marker:data.npmMarker,metadata:!!data.npmMarker});else if(code.includes('writeFileSync'))data.npmMarker=stdin().trim();}
 }
 else if(a[0]==='exec'){
  if(a.includes('nginx'))out=data.site;
@@ -161,4 +161,15 @@ test('failed builds or PWA HTTP checks never mark initialization complete', asyn
     try { const result = await f.invoke(); assert.equal(result.code, 1); const state = JSON.parse(await fs.readFile(f.root + '/.foundation-state.json', 'utf8')); assert.equal(state.phase, 'failed'); assert.doesNotMatch(result.stdout + result.stderr, /PRIVATE-BUILD/); }
     finally { await f.cleanup(); }
   }
+});
+
+test('outdated Node stops before installing frontend dependencies', async () => {
+  const f = await fixture({ frontendNode: '22.12.0' });
+  try {
+    const result = await f.invoke();
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, /Node 22.13/);
+    assert.equal((await f.data()).npmInstalls, 0);
+    assert.equal((await f.data()).builds, 0);
+  } finally { await f.cleanup(); }
 });

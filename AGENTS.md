@@ -24,3 +24,5 @@ PWA: usar somente src/sw.js e virtual:pwa-register. Não cachear API/sessão/CSR
 
 Push: envio somente pelo PushNotificationService, sessão/CSRF/ownership/rate limit obrigatórios; nunca transferir endpoints entre contas. VAPID privada preservada; permissão só por clique e SW único. Preferência/inscrição são revalidadas pelos jobs. Acesso de teste só local e explícito, sem senha fixa ou envio automático; produção não expõe esse acesso. Guia concentra VAPID/fila/testes. Não confundir fila/aceite do provedor com recebimento real.
 
+
+Validação final: seguir a seção própria do guia, com dois clones limpos, reexecução, testes e evidências reais. Ferramentas fixadas em manifests/lockfiles; navegador de testes temporário usa imagem Playwright compatível e node_modules independente do Alpine. Não aprovar referências visuais automaticamente nem confundir mocks/DOM com navegador, Engine, aparelho ou produção. Baselines `.foundation-acceptance.json` são privados. Limpeza final de README/SDD depende do aceite operacional e preserva os contratos.

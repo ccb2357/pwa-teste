@@ -67,3 +67,5 @@ Histórico push usa f7-chip oficial em lista ordenada vertical, até quatro iten
 
 
 Dispositivos push usam f7-card/f7-card-content e f7-button outline red. Identificação, descrição e ação ficam empilhadas, sem coluna after ou truncamento por ellipsis. app.css controla margens/largura com tokens; bordas, superfície e confirmação permanecem Framework7. Ação tem nome acessível que identifica o alvo e os mesmos estados disabled/reentrada.
+
+Regressão visual: Playwright captura grid e formulário em desktop/mobile, com fonte local carregada e animações desativadas. Referências ficam em frontend/tests/e2e/visual-baselines após aprovação humana; testes não aprovam aparência por conta própria. Usar a mesma imagem Playwright para gerar/comparar; fluxo no guia de instalação.

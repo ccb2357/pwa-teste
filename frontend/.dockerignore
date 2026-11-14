@@ -1,0 +1,4 @@
+*
+!tests/
+!tests/e2e/
+!tests/e2e/Dockerfile

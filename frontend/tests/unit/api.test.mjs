@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { apiRequest, getStatus, ApiError } from '../../src/services/api.js';
 const healthy = { status: 'ok', checks: { application: 'ok', database: 'ok' } };

@@ -13,6 +13,8 @@ Prepare o arquivo de configuração central **manualmente**:
    - Se `.env.foundation` já existir, mantenha o arquivo atual; não o substitua pelo exemplo.
    - Abra `.env.foundation` no VSCode ou em outro editor de texto, confira os campos e salve as alterações.
 
+Você configura somente esse arquivo. O bootstrap gera os arquivos internos do Laravel/testing e a configuração pública do frontend, preservando as chaves existentes; não é necessário criar ou preencher esses arquivos manualmente.
+
 ## 2. Construir a imagem do executor
 
 No **Prompt de Comando (CMD)**:
@@ -349,6 +351,154 @@ Limpa os caches e aplica migrations pendentes. No CMD:
 cd /d C:\var\www\infra
 docker compose exec -T -w /var/www/meu-projeto/backend php-fpm php artisan app:sync
 ```
+
+## Validação final da fundação
+
+Faça esta validação seguindo o guia, sem reutilizar os arquivos privados da instalação anterior. Anote em MEMORY.md o comando, resultado e qualquer dúvida que tenha exigido ajuda. Só encerre o aceite depois de corrigir o guia e repetir a etapa afetada.
+
+### 1. Instalar dois clones limpos
+
+Use o pacote desta entrega ou um repositório atualizado com ele. Prepare duas pastas novas ao lado de `infra`, sem pasta extra aninhada e sem copiar `.env`, `.env.testing`, `.env.foundation`, `.foundation-state.json`, vendor, node_modules ou dist da instalação anterior.
+
+Os nomes abaixo são exemplos para o teste; adapte todos os comandos e trechos do guia a eles:
+
+| Campo no `.env.foundation` | Clone A | Clone B |
+| --- | --- | --- |
+| Pasta e PROJECT_SLUG | validacao-a | validacao-b |
+| PROJECT_NAME / PWA_SHORT_NAME | Validação A | Validação B |
+| LOCAL_DOMAIN | validacao-a.localhost | validacao-b.localhost |
+| DEV_PORT | 5180 | 5182 |
+| PREVIEW_PORT | 5181 | 5183 |
+| DB_DATABASE | validacao_a | validacao_b |
+| DB_TEST_DATABASE | validacao_a_test | validacao_b_test |
+
+Use a conta MySQL e a rede existentes. Para conferir também chaves push isoladas, configure `PUSH_ENABLED=true`, `PUSH_TEST_AUTH_ENABLED=true` e seu contato VAPID nos dois; deixe as duas chaves vazias somente na primeira instalação de cada clone.
+
+Execute as etapas 1–6 deste manual para cada clone, preservando os demais sites/serviços. **Você preenche somente `.env.foundation`:** o bootstrap cria os `.env` do Laravel/testing e a configuração pública do frontend. Não crie `.env` no frontend nem edite os derivados. Ao final, os dois domínios devem abrir a Hello e o bootstrap deve retornar 0.
+
+### 2. Conferir reexecução e preservação
+
+Antes de testar preservação, conclua as instalações dos dois clones. Na pasta infra, crie um usuário de teste em cada banco principal para não comparar apenas bancos vazios. O código de acesso exibido não precisa ser usado nesta etapa:
+
+```cmd
+docker compose exec -T -w /var/www/validacao-a/backend php-fpm php artisan push:test-user aceite@example.test
+```
+
+```cmd
+docker compose exec -T -w /var/www/validacao-b/backend php-fpm php artisan push:test-user aceite@example.test
+```
+
+Salve uma referência privada de cada instalação:
+
+```cmd
+docker compose exec -T -w /var/www/validacao-a/backend php-fpm php artisan foundation:verify --save
+```
+
+```cmd
+docker compose exec -T -w /var/www/validacao-b/backend php-fpm php artisan foundation:verify --save
+```
+
+Repita o bootstrap da etapa 5 para cada clone, sem alterar o central, interagir com o app ou processar filas entre a referência e a comparação. Dependências inalteradas devem ser preservadas. Depois:
+
+```cmd
+docker compose exec -T -w /var/www/validacao-a/backend php-fpm php artisan foundation:verify
+```
+
+```cmd
+docker compose exec -T -w /var/www/validacao-b/backend php-fpm php artisan foundation:verify
+```
+
+```cmd
+docker compose exec -T -w /var/www/validacao-a/backend php-fpm php artisan foundation:verify --compare=/var/www/validacao-b
+```
+
+Esperado: **PRESERVAÇÃO: OK** nos dois e **ISOLAMENTO DE IDENTIFICADORES: OK**. São comparados arquivos/chaves por hash e conteúdo das tabelas por hash/contagem; nenhum dado é exibido. `.foundation-acceptance.json` é privado e não vai ao Git. Comparar clones verifica nomes/portas/bancos/volumes declarados e chaves; o bootstrap confere os mounts no Engine. Execute também as verificações individuais: a comparação entre referências não substitui testar os dois apps.
+
+Se falhar, mantenha a referência para investigar. `--save --replace-baseline` só cria outra referência quando a mudança é intencional e já foi revisada. O comando é exclusivo do ambiente local, exige bootstrap concluído e lê o banco principal; não executa migrations nem altera registros. Não rode durante atividade que modifique os dados.
+
+### 3. Executar as verificações
+
+Execute a seção **Verificações e testes** para cada clone, substituindo `meu-projeto`. Além do backend/Pint/bootstrap/Vitest, na pasta infra:
+
+```cmd
+docker compose --profile dev run --rm --no-deps meu-projeto-node npm run check
+```
+
+Esperado: lint JavaScript/Vue/CSS, Vitest e build/check:pwa passando. As ferramentas exigem Node 22.13+ na linha 22. Se o bootstrap informar imagem antiga, execute o comando abaixo e repita a etapa:
+
+```cmd
+docker pull node:22-alpine
+``` Não precisa instalar Node/npm no Windows.
+
+### 4. Testes automatizados no navegador
+
+Mescle este serviço opcional ao Compose existente, adaptando pasta, nome e rede. Não altere PHP/MySQL/Nginx para executar estes testes:
+
+```yaml
+services:
+    meu-projeto-browser-tests:
+        build:
+            context: ../meu-projeto/frontend
+            dockerfile: tests/e2e/Dockerfile
+        image: pwa-foundation-browser-tests:1.65.1-node22
+        working_dir: /app
+        init: true
+        ipc: host
+        volumes:
+            - ../meu-projeto/frontend:/app
+        tmpfs:
+            - /app/node_modules
+        networks:
+            - infra_network
+        profiles:
+            - tools
+```
+
+O contêiner é temporário, com Node 22.13+ e navegadores da imagem oficial Playwright 1.65.1; não compartilha node_modules com o Alpine. Na pasta infra:
+
+```cmd
+docker compose --profile tools config --quiet
+```
+
+```cmd
+docker compose --profile tools build meu-projeto-browser-tests
+```
+
+```cmd
+docker compose --profile tools run --rm --no-deps meu-projeto-browser-tests
+```
+
+Esperado: verificações e testes passando; cenários de push/worker restritos a Chromium aparecem como ignorados nos outros motores. A primeira execução baixa imagem/dependências. Relatório em `frontend/playwright-report/index.html`.
+
+Os testes usam o build numa prévia interna, com APIs e PushManager simulados; não acessam seus usuários nem enviam push real. Exercitam UI Chromium/Firefox/WebKit, formulário, FAB, transições, histórico e estados push. Chromium também testa worker/cache offline e atualização em duas abas, alterando temporariamente o worker gerado e restaurando-o ao final. Se uma execução for interrompida, refaça o build antes de continuar. Essa automação não substitui a validação pelo Nginx/aparelho.
+
+### 5. Aprovar referências visuais
+
+Gere candidatos com o mesmo serviço, a partir da pasta infra:
+
+```cmd
+docker compose --profile tools run --rm --no-deps meu-projeto-browser-tests sh -c "npm ci --include=dev && npm run test:visual:prepare"
+```
+
+Abra as imagens em `frontend/test-results/visual-candidates/`. Confira grid/formulário nas pastas `visual-desktop` e `visual-mobile`. Somente se aprovar, copie essas duas pastas pelo Explorador para `frontend/tests/e2e/visual-baselines/` e versione as referências aprovadas.
+
+Depois compare sem atualizar as referências:
+
+```cmd
+docker compose --profile tools run --rm --no-deps meu-projeto-browser-tests sh -c "npm ci --include=dev && npm run test:visual"
+```
+
+Esperado: comparação passando. Referência ausente ou diferença precisa de análise; não gere outra automaticamente para esconder regressão. Use a mesma imagem/versão para comparar.
+
+### 6. Conferir Nginx, aparelho e produção
+
+Nos dois domínios Nginx, confira Hello, status HTML/JSON e saúde conforme etapa 6. Teste instalação/offline/retorno da rede e atualização em duas abas pelo roteiro deste guia. Para push real, siga a seção própria: recebimento e clique, preferência desligada e remoção antes do worker. Registre navegador/SO/origem e o que foi confirmado; emulação não comprova Android/iPhone.
+
+Para VPS, execute o roteiro **VPS e atualizações** com configuração própria, HTTPS, backup/restauração isolada e worker agendado. Nunca rode a suíte destrutiva no banco de produção nem habilite acesso de teste local nela. Se não houver VPS/iPhone disponível, registre a pendência; não declare homologação desses ambientes. Antes de analisar ou alterar a infra compartilhada com outra IA, envie os arquivos atuais necessários, sem segredos.
+
+Portabilidade: repita instalação/reexecução em uma raiz com espaços, ajustando os caminhos e `INFRA_COMPOSE_PATH`; registre Windows e Linux separadamente. Os testes simulados de mapeamento, dotenv e falha parcial não comprovam execução nesses hosts. Registre como pendente qualquer cenário não executado.
+
+Feche a validação em MEMORY.md com resultados reais, simulações e pendências. Depois faça a limpeza final de README/SDD, preservando contratos e decisões necessárias para outra IA trabalhar sem esta conversa.
 
 ## VPS e atualizações
 

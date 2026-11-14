@@ -91,7 +91,7 @@
           <f7-button type="button" outline @click="sheetOpened = true">Abrir sheet</f7-button>
           <f7-button type="button" outline @click="showToast">Abrir toast</f7-button>
         </div>
-        <p class="app-note">A notificação acima é interna do Framework7. Web Push será integrado em uma etapa própria.</p>
+        <p class="app-note">A notificação acima é interna do Framework7. Web Push é configurado na seção Push Notifications.</p>
       </f7-block>
 
       <f7-block-title>Ícones Lucide</f7-block-title>
@@ -116,17 +116,19 @@
       <PushSettings ref="pushSettings" />
     </div>
 
-    <f7-fab slot="fixed" position="right-bottom" @fab:open="fabOpened = true" @fab:close="onFabClose" @keydown.esc.prevent.stop="closeFab">
-      <template #root>
-        <a href="#" role="button" aria-label="Ações de demonstração" aria-controls="hello-fab-actions" :aria-expanded="fabOpened" @keydown.space.prevent="$event.currentTarget.click()">
-          <f7-icon f7="plus" aria-hidden="true" />
-          <f7-icon f7="xmark" aria-hidden="true" />
-        </a>
-        <f7-fab-buttons id="hello-fab-actions" position="top" :inert="fabOpened ? null : ''" :aria-hidden="!fabOpened">
-          <f7-fab-button v-for="action in 3" :key="action" href="#" role="button" :tabindex="fabOpened ? 0 : -1" :label="`Ação ${action}`" fab-close @keydown.space.prevent="$event.currentTarget.click()" @click="showFabAction(action)">{{ action }}</f7-fab-button>
-        </f7-fab-buttons>
-      </template>
-    </f7-fab>
+    <template #fixed>
+      <f7-fab position="right-bottom" @fab:open="fabOpened = true" @fab:close="onFabClose" @keydown.esc.prevent.stop="closeFab">
+        <template #root>
+          <a href="#" role="button" aria-label="Ações de demonstração" aria-controls="hello-fab-actions" :aria-expanded="fabOpened" @keydown.space.prevent="$event.currentTarget.click()">
+            <f7-icon f7="plus" aria-hidden="true" />
+            <f7-icon f7="xmark" aria-hidden="true" />
+          </a>
+          <f7-fab-buttons id="hello-fab-actions" position="top" :inert="fabOpened ? null : ''" :aria-hidden="!fabOpened">
+            <f7-fab-button v-for="action in 3" :key="action" href="#" role="button" :tabindex="fabOpened ? 0 : -1" :label="`Ação ${action}`" fab-close @keydown.space.prevent="$event.currentTarget.click()" @click="showFabAction(action)">{{ action }}</f7-fab-button>
+          </f7-fab-buttons>
+        </template>
+      </f7-fab>
+    </template>
 
     <f7-sheet role="dialog" aria-label="Sheet de demonstração" v-model:opened="sheetOpened" :backdrop="true" :close-on-escape="true" :close-by-backdrop-click="true">
       <f7-toolbar>

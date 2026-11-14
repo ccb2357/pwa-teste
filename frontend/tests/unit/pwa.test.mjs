@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { createPwaManager } from '../../src/pwa/manager.js';
 import { draftStorage, cleanDraft } from '../../src/pwa/draft.js';

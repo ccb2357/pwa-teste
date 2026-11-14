@@ -5,8 +5,9 @@
   font-weight: 200 900;
   font-display: swap;
 }
+
 :root {
-  --app-font-family: Nunito, system-ui, sans-serif;
+  --app-font-family: nunito, system-ui, sans-serif;
   --f7-font-family: var(--app-font-family);
   --f7-button-font-family: var(--app-font-family);
   --app-space-1: 4px;

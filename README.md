@@ -238,11 +238,12 @@ Incluir em AGENTS.md/RULES.md a exigência de arquivos atuais para nova análise
 | Tipografia | Nunito variável local em frontend/public/fonts/, @font-face/tokens.css e fallback system-ui, sans-serif. Sem CDN; mesma fonte inicial nos clones, troca só com aprovação e SDD atualizado. |
 | Máscaras de entrada | **IMask 7.6.1**, pacote imask |
 | Validação de formulários | **JustValidate 4.3.0**, pacote just-validate |
-| Testes de lógica frontend | **Vitest** |
-| Testes de navegador e regressão visual | **Playwright** |
+| Testes de lógica frontend | **Vitest 5.1.0** |
+| Testes de navegador e regressão visual | **Playwright 1.65.1** |
+| Qualidade frontend | **ESLint 10.15.0** com plugin Vue e **Stylelint 16.26.1** |
 | Testes backend | **PHPUnit**, integrado às ferramentas de teste do Laravel |
 | Desenvolvimento e build | Vite **8.3.4** com **@vitejs/plugin-vue** para componentes .vue |
-| Ambiente Node | Imagem Docker **node:22-alpine** |
+| Ambiente Node | Imagem Docker **node:22-alpine**, Node **>=22.13 <23** |
 | PWA/Service Worker | **vite-plugin-pwa 2.0.0 + Workbox 7.4.1 injectManifest**, fonte única frontend/src/sw.js, precache, offline, atualização e eventos push/clique |
 | Push Notifications | Notifications Laravel + **laravel-notification-channels/webpush**, Web Push/VAPID e cliente Push API; 13.0.1 (Minishlink Web Push 11.0.0; PHP 8.2/Laravel 12) |
 | Fila de envio | Laravel **database** no MySQL existente; Jobs/worker no PHP-FPM, operados por mecanismo existente ou Cron, sem novo contêiner |

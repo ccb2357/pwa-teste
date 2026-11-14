@@ -55,3 +55,9 @@ O construtor WebPush recebe PSR NullLogger para não converter avisos opcionais 
 
 
 Diagnóstico CLI opcional em scripts/bootstrap/php/diagnose-push.php confere configuração/inscrição/DNS e executa criptografia/canal com HTTP mock em memória. Não persiste resultado do mock nem consome fila; saída somente de etapas/metadados controlados, sem mensagens arbitrárias de exceção. O mock não comprova transporte externo ou recebimento.
+
+## Contrato dos testes
+
+Vitest usa configuração independente para lógica pura. Playwright testa o build em prévia interna; APIs e PushManager são simulados, sem enviar push ou acessar usuários reais. Status/falha, formulário/máscara, controles, FAB/teclado e retornos executam em Chromium desktop/mobile, Firefox e WebKit. Worker/cache offline e atualização em duas abas usam worker real somente no Chromium; o teste altera temporariamente o worker gerado e o restaura. A validação de dois builds completos, Nginx/aparelhos e produção permanece separada.
+
+Referências visuais são candidatas até aprovação humana; comparação exige os quatro PNGs aprovados na mesma imagem/versão, sem atualização automática. Não versionar relatórios, screenshots de falha ou referências privadas. Leituras de banco para preservação pertencem ao comando local FoundationVerify; testes destrutivos continuam restritos ao banco testing pelo TestingDatabaseGuard. Evidências e limitações somente no MEMORY; roteiro no guia de instalação.

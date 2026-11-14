@@ -1,3 +1,4 @@
+/* eslint no-control-regex: "off" -- Reject control bytes in untrusted push destinations. */
 import { technicalPath } from './policy.js';
 export function pushDestination(value, origin) {
   if (typeof value === 'string' && value.startsWith(origin + '/')) value = value.slice(origin.length);

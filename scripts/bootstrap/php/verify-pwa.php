@@ -20,39 +20,39 @@ try {
         return [substr($response, 0, $size), substr($response, $size)];
     };
     [$headers, $html] = $request('/');
-    if (!str_contains($html, 'name="app-build" content="'.$config['buildId'].'"') || !str_contains($html, 'manifest.webmanifest')) {
+    if (! str_contains($html, 'name="app-build" content="'.$config['buildId'].'"') || ! str_contains($html, 'manifest.webmanifest')) {
         throw new RuntimeException('html');
     }
     foreach (['/', '/manifest.webmanifest', '/sw.js', '/offline.html'] as $path) {
         [$headers, $body] = $request($path);
-        if (!preg_match('/Cache-Control:[^\r\n]*(no-cache|no-store|max-age=0)/i', $headers) || preg_match('/Cache-Control:[^\r\n]*immutable/i', $headers)) {
+        if (! preg_match('/Cache-Control:[^\r\n]*(no-cache|no-store|max-age=0)/i', $headers) || preg_match('/Cache-Control:[^\r\n]*immutable/i', $headers)) {
             throw new RuntimeException('cache');
         }
         if ($path === '/manifest.webmanifest') {
             $manifest = json_decode($body, true, 32, JSON_THROW_ON_ERROR);
-            if (($manifest['name'] ?? null) !== $config['name'] || ($manifest['start_url'] ?? null) !== '/' || ($manifest['scope'] ?? null) !== '/' || !preg_match('/Content-Type:[^\r\n]*(json|manifest)/i', $headers)) {
+            if (($manifest['name'] ?? null) !== $config['name'] || ($manifest['start_url'] ?? null) !== '/' || ($manifest['scope'] ?? null) !== '/' || ! preg_match('/Content-Type:[^\r\n]*(json|manifest)/i', $headers)) {
                 throw new RuntimeException('manifest');
             }
         }
-        if ($path === '/offline.html' && !str_contains($body, '<title>Sem conexão</title>')) {
+        if ($path === '/offline.html' && ! str_contains($body, '<title>Sem conexão</title>')) {
             throw new RuntimeException('offline');
         }
-        if ($path === '/sw.js' && (!str_contains($body, 'SKIP_WAITING') || !preg_match('/Content-Type:[^\r\n]*javascript/i', $headers))) {
+        if ($path === '/sw.js' && (! str_contains($body, 'SKIP_WAITING') || ! preg_match('/Content-Type:[^\r\n]*javascript/i', $headers))) {
             throw new RuntimeException('worker');
         }
     }
-    if (!is_string($config['asset']) || !preg_match('/^assets\/[\w.-]+\.js$/', $config['asset'])) {
+    if (! is_string($config['asset']) || ! preg_match('/^assets\/[\w.-]+\.js$/', $config['asset'])) {
         throw new RuntimeException('asset-path');
     }
     [$headers, $assetBody] = $request('/'.$config['asset']);
-    if (!str_contains($assetBody, $config['buildId'])) {
+    if (! str_contains($assetBody, $config['buildId'])) {
         throw new RuntimeException('html');
     }
-    if (!preg_match('/Cache-Control:[^\r\n]*immutable/i', $headers)) {
+    if (! preg_match('/Cache-Control:[^\r\n]*immutable/i', $headers)) {
         throw new RuntimeException('asset-cache');
     }
     [$headers, $apiBody] = $request('/api/v1/__foundation_missing__', 404);
-    if (!preg_match('/Content-Type:[^\r\n]*application\/json/i', $headers) || str_contains($apiBody, 'app-build')) {
+    if (! preg_match('/Content-Type:[^\r\n]*application\/json/i', $headers) || str_contains($apiBody, 'app-build')) {
         throw new RuntimeException('api-route');
     }
     $request('/assets/__foundation_missing__.js', 404);

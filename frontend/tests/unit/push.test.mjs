@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { pushDestination, pushNotification } from '../../src/pwa/push-payload.js';
 const origin = 'https://app.example.test';

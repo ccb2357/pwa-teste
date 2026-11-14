@@ -127,7 +127,7 @@ Os subprocessos dos testes de orquestração preservam FOUNDATION_RUNTIME_PACKAG
 
 ## Frontend da Sprint 2
 
-Node 22 (>=22.12 <23), Vite 8.3.4, plugin-vue 6.0.11, Vue 3.5.45, framework7/framework7-vue 9.2.0, framework7-icons 5.0.5, lucide 1.72.0, IMask 7.6.1 e JustValidate 4.3.0. Engines/peers conferidos no registry dos pacotes. CSS exportado por framework7/css/bundle, sem sufixo .css nessa versão; ler exports da versão fixada. Sem dependência de biblioteca adicional de estilos.
+Node 22 (>=22.13 <23), Vite 8.3.4, plugin-vue 6.0.11, Vue 3.5.45, framework7/framework7-vue 9.2.0, framework7-icons 5.0.5, lucide 1.72.0, IMask 7.6.1 e JustValidate 4.3.0. Engines/peers conferidos no registry dos pacotes. CSS exportado por framework7/css/bundle, sem sufixo .css nessa versão; ler exports da versão fixada. Sem dependência de biblioteca adicional de estilos.
 
 frontend/.foundation.public.json é gerado por ambiente e ignorado no Git. O Vite exige esse arquivo, gera título/locale e proxy API/Sanctum/up → Nginx com Host do domínio central. Servidor interno 5173, strictPort, host true, polling 300ms; publicação no host usa DEV_PORT (5176). frontend/vite.cmd resolve Compose/serviço/caminhos reais. Site Nginx serve frontend/dist e encaminha rotas técnicas para Laravel. Build verificado não prova instalação em aparelho.
 
@@ -158,3 +158,11 @@ PUSH_ENABLED=false e PUSH_TEST_AUTH_ENABLED=false por padrão. VAPID_SUBJECT é 
 
 Fila database reaproveita jobs/failed_jobs. push:work executa no PHP-FPM existente, fila push, lock de 180s, janela de 50s e limite externo de 75s via Symfony Process; retry_after padrão de 90s. Não executar workers concorrentes externos sem ajustar esses limites. Jobs têm timeout de 45s, transporte de 15s e três tentativas. Cron chama push:work periodicamente; Scheduler não consome jobs. Sem novo contêiner, Redis ou daemon obrigatório. O PHP precisa permitir processos locais (proc_open); ausência falha sem anunciar envio concluído. Comandos e teste real somente no guia da raiz.
 
+
+## Validação final
+
+Configuração manual exclusivamente em `.env.foundation`; Laravel/testing e configuração pública do frontend são derivados pelo bootstrap. O preparo frontend confere Node 22.13+ na linha 22 antes de instalar, conforme os engines das ferramentas fixadas.
+
+Vitest 5.1.0 testa lógica; ESLint 10.15.0/Vue e Stylelint 16.26.1 conferem JavaScript/Vue/CSS. Playwright 1.65.1 roda em serviço temporário opcional no Compose existente, com browsers Ubuntu e Node 22, dependências isoladas por tmpfs. Não compartilhar node_modules entre essa imagem e Alpine. Dockerfile em frontend/tests/e2e/Dockerfile; comandos e aceite em [Validação final da fundação](../../instalacao-pwa-framework.md#validação-final-da-fundação).
+
+`foundation:verify` só aceita ambiente local, banco principal correspondente ao central e bootstrap concluído. Referência privada `.foundation-acceptance.json`: hashes de configuração/chaves/arquivos e hashes/contagens das tabelas, sem valores de registros ou segredos. Captura transacional somente leitura; não altera dados. Compara reexecução de cada clone e colisões entre identificadores das referências de dois clones. Não substitui os checks reais do Engine, HTTP e banco. Guards de testing/produção bloqueiam a captura. Comparação exige ausência de atividade concorrente; mudanças intencionais exigem referência revisada.

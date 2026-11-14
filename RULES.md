@@ -23,3 +23,5 @@ Regra visual aprovada: inputs, selects e textareas sem outline retangular de foc
 
 16. Web Push: usar serviço central, APIs de sessão com CSRF/ownership/rate limit, VAPID privada por ambiente e worker único. Não transferir endpoints, pedir permissão ao abrir, enviar no bootstrap ou inventar login de produção. Revalidar preferências/dispositivos na fila; remover apenas inscrições expiradas 404/410; não registrar endpoints/chaves/payload. Acesso local de teste é opcional e nunca habilitado em produção. Evidência de entrega exige aparelho real.
 
+
+Validação final: seguir a seção própria do guia, com dois clones limpos, reexecução, testes e evidências reais. Ferramentas fixadas em manifests/lockfiles; navegador de testes temporário usa imagem Playwright compatível e node_modules independente do Alpine. Não aprovar referências visuais automaticamente nem confundir mocks/DOM com navegador, Engine, aparelho ou produção. Baselines `.foundation-acceptance.json` são privados. Limpeza final de README/SDD depende do aceite operacional e preserva os contratos.

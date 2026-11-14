@@ -1,6 +1,6 @@
 {
-  "foundationVersion": "0.5.0-sprint.5",
-  "stage": "push",
+  "foundationVersion": "0.6.0-sprint.6",
+  "stage": "validation",
   "completeFoundation": false,
   "skeleton": {
     "package": "laravel/laravel",
@@ -32,5 +32,11 @@
     "web-push": "11.0.0",
     "queue": "database",
     "enabledByDefault": false
+  },
+  "testing": {
+    "vitest": "5.1.0",
+    "playwright": "1.65.1",
+    "eslint": "10.15.0",
+    "stylelint": "16.26.1"
   }
 }

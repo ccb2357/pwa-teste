@@ -73,3 +73,5 @@ Acesso local opcional usa código CLI de uso único/10 minutos, campo password e
 
 
 Dispositivos cadastrados: seção explicativa com um card Framework7 por inscrição. Este dispositivo/identificação e nome legível ficam acima do botão Remover dispositivo, em largura total. A remoção exige confirmação explicando que novos envios serão impedidos. O botão superior de desativação só aparece para uma inscrição local sem vínculo com a conta; não duplicar a ação do card atual.
+
+Verificação automatizada: frontend/tests/e2e cobre estados de status/falha/offline, validação/máscara, transições, componentes, FAB/teclado, Lucide e dispositivos/histórico push com API simulada. Worker/cache e atualização entre abas têm casos Chromium separados. Capturas de grid/formulário precisam de aprovação humana; instalação/entrega push em aparelho e Nginx são aceites reais separados, descritos no guia.
